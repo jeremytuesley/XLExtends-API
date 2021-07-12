@@ -1,28 +1,38 @@
 const { gql } = require('apollo-server-express');
 
 const typeDefs = gql`
-  type Image {
-    url: String!
+  input CREATE_NEW_ADMIN_DATA {
+    email: String!
+    password: String!
   }
 
-  type Option {
-    optionName: String!
-    optionValue: String!
+  input LOGIN_DATA {
+    email: String!
+    password: String!
+  }
+
+  type AuthToken {
+    authToken: String!
   }
 
   type Product {
     available: Boolean!
     description: String!
     _id: ID!
-    images: [Image!]!
+    images: [String!]!
     name: String!
-    options: [Option]
+    options: [String!]!
     price: Float!
     salePrice: Float!
   }
 
+  type Mutation {
+    createNewAdmin(createNewAdminData: CREATE_NEW_ADMIN_DATA): AuthToken!
+  }
+
   type Query {
-    products: [Product]
+    getAllProducts: [Product!]!
+    login(loginData: LOGIN_DATA): AuthToken!
   }
 `;
 

@@ -3,8 +3,10 @@ const cors = require('cors');
 const express = require('express');
 
 const { createDatabaseConnection } = require('./database/createDatabaseConnection');
+const { handleErrors } = require('./errors/handleErrors');
 const resolvers = require('./graphql/resolvers');
 const { typeDefs } = require('./graphql/typeDefs');
+const { authenticateUser } = require('./middleware/authenticateUser');
 
 const PORT = process.env.PORT || 5000;
 
@@ -12,7 +14,8 @@ const initializeExpress = async () => {
   const app = express();
 
   const server = new ApolloServer({
-    context: ({ req }) => req,
+    context: ({ req }) => ({ req, user: authenticateUser(req) }),
+    formatError: (error) => handleErrors(error),
     resolvers,
     typeDefs,
   });
