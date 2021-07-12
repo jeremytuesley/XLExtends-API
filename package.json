@@ -5,6 +5,10 @@
   "repository": "git@github.com:jeremytuesley/XLExtends-API.git",
   "author": "thankyouthatscool <85291297+thankyouthatscool@users.noreply.github.com>",
   "license": "MIT",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js"
+  },
   "dependencies": {
     "apollo-server-express": "^2.25.2",
     "bcrypt": "^5.0.1",
@@ -15,5 +19,8 @@
     "lodash": "^4.17.21",
     "mongoose": "^5.13.2",
     "validator": "^13.6.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.12"
   }
 }
