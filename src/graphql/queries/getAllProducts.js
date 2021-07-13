@@ -1,7 +1,9 @@
 const Product = require('../../models/product');
 
 const getAllProducts = async () => {
-  const allProducts = await Product.find();
+  const allProducts = await Product.find()
+    .populate('creatorId', 'email')
+    .populate('lastEditorId', 'email');
 
   return allProducts;
 };

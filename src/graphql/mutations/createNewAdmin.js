@@ -17,7 +17,7 @@ const createNewAdmin = async (_, { createNewAdminData: { email, password } }) =>
   if (!validator.isLength(password, { min: 6 }))
     errors.push({ message: 'Password too short (min. 6 characters).' });
 
-  if (errors.length > 0) throw new BadUserInputError(errors);
+  if (errors.length) throw new BadUserInputError(errors);
 
   const existingAdmin = await Admin.findOne({ email });
 

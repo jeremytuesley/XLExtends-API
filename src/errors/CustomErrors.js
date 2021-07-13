@@ -14,4 +14,10 @@ class BadUserInputError extends CustomError {
   }
 }
 
-module.exports = { BadUserInputError, CustomError };
+class UnauthorizedOperation extends CustomError {
+  constructor() {
+    super('You are not authorized to perform that action.', 'UNAUTHORIZED_ACTION', '401');
+  }
+}
+
+module.exports = { BadUserInputError, CustomError, UnauthorizedOperation };

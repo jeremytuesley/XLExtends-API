@@ -12,7 +12,7 @@ const login = async (_, { loginData: { email, password } }) => {
 
   if (validator.isEmpty(password)) errors.push({ message: 'Password is required.' });
 
-  if (errors.length > 0) throw new BadUserInputError(errors);
+  if (errors.length) throw new BadUserInputError(errors);
 
   const targetAdmin = await Admin.findOne({ email });
 
