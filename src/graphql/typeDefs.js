@@ -22,6 +22,10 @@ const typeDefs = gql`
     salePrice: Float!
   }
 
+  input DELETE_PRODUCT_DATA {
+    productId: ID!
+  }
+
   input EDIT_PRODUCT_DATA {
     available: Boolean!
     description: String!
@@ -67,6 +71,7 @@ const typeDefs = gql`
     contact(contactData: CONTACT_DATA): Boolean!
     createNewAdmin(createNewAdminData: CREATE_NEW_ADMIN_DATA): AuthToken!
     createNewProduct(createNewProductData: CREATE_NEW_PRODUCT_DATA): Product!
+    deleteProduct(deleteProductData: DELETE_PRODUCT_DATA): Boolean!
     editProduct(editProductData: EDIT_PRODUCT_DATA): Product!
   }
 
