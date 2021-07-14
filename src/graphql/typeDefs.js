@@ -50,17 +50,17 @@ const typeDefs = gql`
     authToken: String!
   }
 
-  type Creator {
+  type Admin {
     email: String!
   }
 
   type Product {
     available: Boolean!
-    creatorId: Creator!
+    creatorId: Admin!
     description: String!
     _id: ID!
     images: [String!]!
-    lastEditorId: Creator
+    lastEditorId: Admin
     name: String!
     options: [String!]!
     price: Float!
