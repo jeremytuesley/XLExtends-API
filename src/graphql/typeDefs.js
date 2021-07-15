@@ -19,7 +19,7 @@ const typeDefs = gql`
     name: String!
     options: [String!]!
     price: Float!
-    salePrice: Float!
+    salePrice: Float
   }
 
   input DELETE_PRODUCT_DATA {
@@ -34,7 +34,7 @@ const typeDefs = gql`
     options: [String!]!
     price: Float!
     productId: ID!
-    salePrice: Float!
+    salePrice: Float
   }
 
   input GET_PRODUCT_DATA {
@@ -64,7 +64,7 @@ const typeDefs = gql`
     name: String!
     options: [String!]!
     price: Float!
-    salePrice: Float!
+    salePrice: Float
   }
 
   type Mutation {
