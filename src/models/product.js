@@ -12,7 +12,7 @@ module.exports = model(
       name: { require: true, type: String, unique: true },
       options: [{ required: false, type: String }],
       price: { required: true, type: Number },
-      salePrice: { required: true, type: Number },
+      salePrice: { required: false, type: Number },
     },
     { timestamps: true },
   ),
