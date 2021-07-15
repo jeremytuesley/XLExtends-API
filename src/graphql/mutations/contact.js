@@ -3,6 +3,9 @@ const sgMail = require('@sendgrid/mail');
 const contact = async (_, { contactData: { comments, contact, name } }) => {
   sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
+  // TODO: validate input.
+  // TODO: Will need to know data types for all three - most likely string for all.
+
   const message = {
     to: 'o.zahnitko@gmail.com',
     from: 'js.t3a2@gmail.com',
