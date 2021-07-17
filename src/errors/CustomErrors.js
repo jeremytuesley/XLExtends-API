@@ -14,10 +14,16 @@ class BadUserInputError extends CustomError {
   }
 }
 
+class TooManyAttachments extends CustomError {
+  constructor() {
+    super("You're trying to add too many attachments.", 'BAD_USER_INPUT', 400);
+  }
+}
+
 class UnauthorizedOperation extends CustomError {
   constructor() {
     super('You are not authorized to perform that action.', 'UNAUTHORIZED_ACTION', '401');
   }
 }
 
-module.exports = { BadUserInputError, CustomError, UnauthorizedOperation };
+module.exports = { BadUserInputError, CustomError, TooManyAttachments, UnauthorizedOperation };

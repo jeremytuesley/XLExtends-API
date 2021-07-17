@@ -1,6 +1,7 @@
 const { ApolloServer } = require('apollo-server-express');
 const cors = require('cors');
 const express = require('express');
+const { graphqlUploadExpress } = require('graphql-upload');
 
 const { handleErrors } = require('../errors/handleErrors');
 const resolvers = require('../graphql/resolvers');
@@ -15,6 +16,7 @@ const initializeServer = async () => {
     formatError: (error) => handleErrors(error),
     resolvers,
     typeDefs,
+    uploads: false,
   });
 
   await server.start();
@@ -22,6 +24,7 @@ const initializeServer = async () => {
   app.use(express.json());
   // // TODO: Put right origin.
   app.use(cors());
+  app.use(graphqlUploadExpress());
 
   server.applyMiddleware({ app, path: '/v1/graphql' });
 
