@@ -248,3 +248,149 @@ describe('Login', () => {
       });
   });
 });
+
+describe('Contact', () => {
+  it('send email when all values provided', (done) => {
+    request(app)
+      .post('/v1/graphql')
+      .send({
+        query: `
+        mutation Contact(
+          $comments: String!,
+          $contact: String!,
+          $files: [Upload!]!,
+          $name: String!
+        ) {
+          contact(contactData: {
+            comments: $comments,
+            contact: $contact, 
+            files: $files,
+            name: $name
+          })
+        }
+        `,
+        variables: {
+          comments: 'These are comments',
+          contact: 'these are contact details',
+          files: [],
+          name: 'This is a name',
+        },
+      })
+      .expect(200)
+      .end((err, res) => {
+        if (err) return done(err);
+        console.log(res.body.data.contact);
+        expect(res.body.data.contact).to.be.true;
+        done();
+      });
+  });
+
+  it('returns an error when contact is not present', (done) => {
+    request(app)
+      .post('/v1/graphql')
+      .send({
+        query: `
+        mutation Contact(
+          $comments: String!,
+          $contact: String!,
+          $files: [Upload!]!,
+          $name: String!
+        ) {
+          contact(contactData: {
+            comments: $comments,
+            contact: $contact, 
+            files: $files,
+            name: $name
+          })
+        }
+        `,
+        variables: {
+          comments: 'These are comments',
+          contact: '',
+          files: [],
+          name: 'This is a name',
+        },
+      })
+      .expect(200)
+      .end((err, res) => {
+        if (err) return done(err);
+        expect(res.body.errors[0].data[0].message).to.have.string('Contact details are required.');
+        done();
+      });
+  });
+
+  it('returns an error when name is not present', (done) => {
+    request(app)
+      .post('/v1/graphql')
+      .send({
+        query: `
+        mutation Contact(
+          $comments: String!,
+          $contact: String!,
+          $files: [Upload!]!,
+          $name: String!
+        ) {
+          contact(contactData: {
+            comments: $comments,
+            contact: $contact, 
+            files: $files,
+            name: $name
+          })
+        }
+        `,
+        variables: {
+          comments: 'These are comments',
+          contact: 'These are the contact details',
+          files: [],
+          name: '',
+        },
+      })
+      .expect(200)
+      .end((err, res) => {
+        if (err) return done(err);
+        expect(res.body.errors[0].data[0].message).to.have.string('Name is required.');
+        done();
+      });
+  });
+
+  it('returns an error when too many files are added', (done) => {
+    request(app)
+      .post('/v1/graphql')
+      .send({
+        query: `
+      mutation Contact(
+        $comments: String!,
+        $contact: String!,
+        $files: [Upload!]!,
+        $name: String!
+      ) {
+        contact(contactData: {
+          comments: $comments,
+          contact: $contact, 
+          files: $files,
+          name: $name
+        })
+      }
+      `,
+        variables: {
+          comments: 'These are comments',
+          contact: 'These are the contact details',
+          files: [
+            { filename: 'yes' },
+            { filename: 'yes' },
+            { filename: 'yes' },
+            { filename: 'yes' },
+            { filename: 'yes' },
+            { filename: 'yes' },
+          ],
+          name: 'This is the name',
+        },
+      })
+      .expect(200)
+      .end((err, res) => {
+        if (err) return done(err);
+        console.log(res.body);
+        done();
+      });
+  });
+});
