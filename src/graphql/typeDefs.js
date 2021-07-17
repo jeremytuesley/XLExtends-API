@@ -88,6 +88,7 @@ const typeDefs = gql`
     getAllProducts: [Product!]!
     getProduct(getProductData: GET_PRODUCT_DATA): Product!
     login(loginData: LOGIN_DATA): AuthToken!
+    signRequest: AuthToken!
   }
 `;
 
