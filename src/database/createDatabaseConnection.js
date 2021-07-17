@@ -18,4 +18,20 @@ const createDatabaseConnection = async () => {
   console.log('Database connection established successfully!');
 };
 
-module.exports = { createDatabaseConnection };
+const createTestDatabase = async () => {
+  console.log('Connecting to the database...');
+
+  await mongoose.connect(
+    `mongodb+srv://${process.env.DB_ATLAS_USERNAME}:${process.env.DB_ATLAS_PASSWORD}@cluster0.rkloo.mongodb.net/XLExtends-test?retryWrites=true&w=majority`,
+    {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      useFindAndModify: false,
+      useCreateIndex: true,
+    },
+  );
+
+  console.log('Database connection established successfully!');
+};
+
+module.exports = { createDatabaseConnection, createTestDatabase };
