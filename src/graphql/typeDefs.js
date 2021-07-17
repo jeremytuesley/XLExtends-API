@@ -76,6 +76,11 @@ const typeDefs = gql`
     salePrice: Float
   }
 
+  type SignatureData {
+    signature: String!
+    timestamp: Int!
+  }
+
   type Mutation {
     contact(contactData: CONTACT_DATA): Boolean!
     createNewAdmin(createNewAdminData: CREATE_NEW_ADMIN_DATA): AuthToken!
@@ -88,7 +93,7 @@ const typeDefs = gql`
     getAllProducts: [Product!]!
     getProduct(getProductData: GET_PRODUCT_DATA): Product!
     login(loginData: LOGIN_DATA): AuthToken!
-    signRequest: AuthToken!
+    signRequest: SignatureData!
   }
 `;
 

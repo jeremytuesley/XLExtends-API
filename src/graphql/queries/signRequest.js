@@ -5,7 +5,7 @@ const signRequest = () => {
 
   const signature = cloudinary.utils.api_sign_request({ timestamp }, process.env.CLOUDINARY_SECRET);
 
-  return { authToken: signature };
+  return { signature, timestamp };
 };
 
 module.exports = { signRequest };
