@@ -9,7 +9,7 @@ const { deleteBooking } = require('./deleteBooking');
 const { deleteProduct } = require('./deleteProduct');
 const { deleteService } = require('./deleteService');
 
-const { editBooking } = require('./editBookingData');
+const { editBooking } = require('./editBooking');
 const { editProduct } = require('./editProduct');
 const { editService } = require('./editService');
 

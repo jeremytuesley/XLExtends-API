@@ -6,7 +6,16 @@ const Service = require('../../models/service');
 
 const createNewBooking = async (
   _,
-  { createNewBookingData: { duration, paymentId, serviceId, startTime } },
+  {
+    createNewBookingData: {
+      comments,
+      customer: { email, firstName, lastName, phoneNumber },
+      duration,
+      paymentId,
+      serviceId,
+      startTime,
+    },
+  },
 ) => {
   const errors = [];
 
@@ -28,6 +37,8 @@ const createNewBooking = async (
   if (!targetService) throw new BadUserInputError({ message: 'Invalid service id.' });
 
   const newBooking = new Booking({
+    comments,
+    customer: { email, firstName, lastName, phoneNumber },
     duration,
     paymentId,
     serviceId,
@@ -36,7 +47,10 @@ const createNewBooking = async (
 
   const newBookingSaveResponse = await newBooking.save();
 
-  return { ...newBookingSaveResponse._doc, serviceId: targetService._doc };
+  return {
+    ...newBookingSaveResponse._doc,
+    serviceId: targetService._doc,
+  };
 };
 
 module.exports = { createNewBooking };

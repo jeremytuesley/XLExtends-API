@@ -9,7 +9,14 @@ const checkAvailability = (_, { checkAvailabilityData: { quantity, timeUnit } })
 
   const booked = Booking.find({
     startTime: { $lte: endAvailabilityDate.toISODate() },
-  }).populate('serviceId', 'available');
+  }).populate({
+    path: 'serviceId',
+    select: 'available description duration images name options price salePrice',
+    populate: [
+      { path: 'creatorId', select: 'email' },
+      { path: 'lastEditorId', select: 'email' },
+    ],
+  });
 
   return booked;
 };

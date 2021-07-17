@@ -9,7 +9,7 @@ const typeDefs = gql`
   }
 
   input CONTACT_DATA {
-    comments: String!
+    comments: String
     contact: String!
     files: [Upload!]!
     name: String!
@@ -20,7 +20,16 @@ const typeDefs = gql`
     password: String!
   }
 
+  input CUSTOMER_INPUT_DATA {
+    email: String!
+    firstName: String!
+    lastName: String!
+    phoneNumber: String!
+  }
+
   input CREATE_NEW_BOOKING_DATA {
+    comments: String
+    customer: CUSTOMER_INPUT_DATA!
     duration: Int!
     paymentId: ID!
     serviceId: ID!
@@ -112,10 +121,19 @@ const typeDefs = gql`
   }
 
   type Booking {
+    customer: CustomerData!
+    comments: String
     duration: Int!
     paymentId: ID!
     serviceId: Service!
     startTime: String!
+  }
+
+  type CustomerData {
+    email: String!
+    firstName: String!
+    lastName: String!
+    phoneNumber: String!
   }
 
   type File {
