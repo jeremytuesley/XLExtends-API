@@ -8,8 +8,6 @@ const createNewProduct = async (
   { createNewProductData: { available, description, images, name, options, price, salePrice } },
   { user },
 ) => {
-  console.log(user);
-
   if (!user) throw new UnauthorizedOperation();
 
   const errors = [];

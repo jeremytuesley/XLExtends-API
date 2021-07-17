@@ -68,14 +68,12 @@ const contact = async (_, { contactData: { comments, contact, files, name } }) =
   sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
   try {
-    await sgMail.send(message);
-
     await Promise.all(
       resolvedFiles.map(({ filename }) =>
         fsUnlinkPromise(path.join(__dirname, 'attachments', filename)),
       ),
     );
-
+    await sgMail.send(message);
     return true;
   } catch (error) {
     console.log(error);

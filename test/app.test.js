@@ -1,17 +1,30 @@
 require('dotenv').config();
+
+const { ApolloServer } = require('apollo-server-express');
 const chai = require('chai');
+const fs = require('fs');
+const { Upload } = require('graphql-upload');
+const path = require('path');
+const { Readable } = require('stream');
 const request = require('supertest');
 
 // TODO: Create test database
-const { createDatabaseConnection } = require('../src/database/createDatabaseConnection');
+const {
+  createDatabaseConnection,
+  createTestDatabase,
+} = require('../src/database/createDatabaseConnection');
+const resolvers = require('../src/graphql/resolvers');
 const { initializeServer } = require('../src/server');
+const { typeDefs } = require('../src/graphql/typeDefs');
+
+const { handleErrors } = require('../src/errors/handleErrors');
 
 let app;
 
 (async () => {
-  const { app: rApp } = await initializeServer();
+  const { app: server } = await initializeServer();
 
-  app = rApp;
+  app = server;
 })();
 
 (async () => {
@@ -19,6 +32,8 @@ let app;
 })();
 
 const expect = chai.expect;
+
+const server = new ApolloServer({ resolvers, typeDefs, uploads: false });
 
 describe('Fetch All', () => {
   it('fetches all ', (done) => {
@@ -263,7 +278,7 @@ describe('Contact', () => {
         ) {
           contact(contactData: {
             comments: $comments,
-            contact: $contact, 
+            contact: $contact,
             files: $files,
             name: $name
           })
@@ -279,7 +294,6 @@ describe('Contact', () => {
       .expect(200)
       .end((err, res) => {
         if (err) return done(err);
-        console.log(res.body.data.contact);
         expect(res.body.data.contact).to.be.true;
         done();
       });
@@ -354,43 +368,136 @@ describe('Contact', () => {
   });
 
   it('returns an error when too many files are added', (done) => {
-    request(app)
-      .post('/v1/graphql')
-      .send({
+    const file = Readable.from(Buffer.from('This is just a test.', 'utf-8'));
+    const upload = new Upload();
+    upload.promise = new Promise((resolve) => {
+      return resolve({
+        createReadStream: () => file,
+        filename: 'some_file.txt',
+        mimetype: 'plain/text',
+      });
+    });
+
+    server
+      .executeOperation({
         query: `
-      mutation Contact(
-        $comments: String!,
-        $contact: String!,
-        $files: [Upload!]!,
-        $name: String!
-      ) {
-        contact(contactData: {
-          comments: $comments,
-          contact: $contact, 
-          files: $files,
-          name: $name
-        })
-      }
-      `,
+    mutation Contact(
+      $comments: String!,
+      $contact: String!,
+      $files: [Upload!]!,
+      $name: String!
+    ) {
+      contact(contactData: {
+        comments: $comments,
+        contact: $contact,
+        files: $files,
+        name: $name
+      })
+    }
+    `,
         variables: {
           comments: 'These are comments',
           contact: 'These are the contact details',
-          files: [
-            { filename: 'yes' },
-            { filename: 'yes' },
-            { filename: 'yes' },
-            { filename: 'yes' },
-            { filename: 'yes' },
-            { filename: 'yes' },
-          ],
-          name: 'This is the name',
+          files: [upload, upload, upload, upload, upload, upload],
+          name: 'This is a name',
         },
       })
-      .expect(200)
-      .end((err, res) => {
-        if (err) return done(err);
-        console.log(res.body);
+      .then((res) => {
+        expect(res.data).to.be.null;
         done();
+      })
+      .catch((err) => done(err));
+  });
+
+  it('works with the correct number of attachments', (done) => {
+    const file = Readable.from(Buffer.from('This is just a test.', 'utf-8'));
+    const upload = new Upload();
+    upload.promise = new Promise((resolve) => {
+      return resolve({
+        createReadStream: () => file,
+        filename: 'some_file.txt',
+        mimetype: 'plain/text',
       });
+    });
+
+    server
+      .executeOperation({
+        query: `
+    mutation Contact(
+      $comments: String!,
+      $contact: String!,
+      $files: [Upload!]!,
+      $name: String!
+    ) {
+      contact(contactData: {
+        comments: $comments,
+        contact: $contact,
+        files: $files,
+        name: $name
+      })
+    }
+    `,
+        variables: {
+          comments: 'These are comments',
+          contact: 'These are the contact details',
+          files: [upload],
+          name: 'This is a name',
+        },
+      })
+      .then((res) => {
+        expect(res.data.contact).to.be.true;
+        done();
+      })
+      .catch((err) => done(err));
+  });
+
+  it('creates attachments dir when one does not exist', () => {
+    fs.rmdir(path.join(__dirname, '../src/graphql/mutations/attachments'), () => {});
+
+    const file = Readable.from(Buffer.from('This is just a test.', 'utf-8'));
+    const upload = new Upload();
+    upload.promise = new Promise((resolve) => {
+      return resolve({
+        createReadStream: () => file,
+        filename: 'some_file.txt',
+        mimetype: 'plain/text',
+      });
+    });
+
+    server
+      .executeOperation({
+        query: `
+    mutation Contact(
+      $comments: String!,
+      $contact: String!,
+      $files: [Upload!]!,
+      $name: String!
+    ) {
+      contact(contactData: {
+        comments: $comments,
+        contact: $contact,
+        files: $files,
+        name: $name
+      })
+    }
+    `,
+        variables: {
+          comments: 'These are comments',
+          contact: 'These are the contact details',
+          files: [upload],
+          name: 'This is a name',
+        },
+      })
+      .then((res) => {
+        expect(res.data.contact).to.be.true;
+        done();
+      })
+      .catch((err) => done(err));
+  });
+
+  it('returns boiler plate error', (done) => {
+    const errorResponse = handleErrors(new Error());
+    expect(errorResponse.code).to.have.string('INTERNAL_ERROR');
+    done();
   });
 });
