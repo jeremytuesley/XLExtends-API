@@ -155,8 +155,95 @@ describe('Login', () => {
       .expect(200)
       .end((err, res) => {
         if (err) return done(err);
-
         expect(res.body.data.login).to.have.own.property('authToken');
+        done();
+      });
+  });
+
+  it('returns error when no email', (done) => {
+    request(app)
+      .post('/v1/graphql')
+      .send({
+        query: `
+        query Login($email: String!, $password: String!) {
+            login(loginData:{email: $email,
+                password: $password}) {
+                authToken
+            }
+        }
+      `,
+        variables: { email: '', password: 'password' },
+      })
+      .expect(200)
+      .end((err, res) => {
+        if (err) return done(err);
+        expect(res.body.errors[0].data[0].message).to.have.string('Email is required.');
+        done();
+      });
+  });
+
+  it('returns error when no password', (done) => {
+    request(app)
+      .post('/v1/graphql')
+      .send({
+        query: `
+        query Login($email: String!, $password: String!) {
+            login(loginData:{email: $email,
+                password: $password}) {
+                authToken
+            }
+        }
+      `,
+        variables: { email: 'user@email.com', password: '' },
+      })
+      .expect(200)
+      .end((err, res) => {
+        if (err) return done(err);
+        expect(res.body.errors[0].data[0].message).to.have.string('Password is required.');
+        done();
+      });
+  });
+
+  it('returns an error when user email does not exist', (done) => {
+    request(app)
+      .post('/v1/graphql')
+      .send({
+        query: `
+      query Login($email: String!, $password: String!) {
+          login(loginData:{email: $email,
+              password: $password}) {
+              authToken
+          }
+      }
+    `,
+        variables: { email: 'user1@email.com', password: 'password' },
+      })
+      .expect(200)
+      .end((err, res) => {
+        if (err) return done(err);
+        expect(res.body.errors[0].code).to.have.string('BAD_USER_INPUT');
+        done();
+      });
+  });
+
+  it('returns an error when passwords do not match', (done) => {
+    request(app)
+      .post('/v1/graphql')
+      .send({
+        query: `
+      query Login($email: String!, $password: String!) {
+          login(loginData:{email: $email,
+              password: $password}) {
+              authToken
+          }
+      }
+    `,
+        variables: { email: 'user@email.com', password: 'passwordsss' },
+      })
+      .expect(200)
+      .end((err, res) => {
+        if (err) return done(err);
+        expect(res.body.errors[0].code).to.have.string('BAD_USER_INPUT');
         done();
       });
   });
