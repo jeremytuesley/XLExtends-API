@@ -23,7 +23,7 @@ const initializeServer = async () => {
 
   app.use(express.json());
   // // TODO: Put right origin.
-  app.use(cors());
+  app.use(cors({ origin: 'https://test-front-end-zzz.herokuapp.com' }));
   app.use(graphqlUploadExpress());
 
   server.applyMiddleware({ app, path: '/v1/graphql' });
