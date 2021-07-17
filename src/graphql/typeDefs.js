@@ -1,9 +1,12 @@
 const { gql } = require('apollo-server-express');
 
 const typeDefs = gql`
+  scalar Upload
+
   input CONTACT_DATA {
     comments: String!
     contact: String!
+    files: [Upload!]!
     name: String!
   }
 
@@ -52,6 +55,12 @@ const typeDefs = gql`
 
   type Admin {
     email: String!
+  }
+
+  type File {
+    filename: String!
+    mimetype: String!
+    encoding: String!
   }
 
   type Product {

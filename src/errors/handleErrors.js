@@ -1,7 +1,7 @@
 const { CustomError } = require('../errors/CustomErrors');
 
 const handleErrors = (error) => {
-  console.log(error?.originalError || error);
+  console.log(error);
   if (error?.originalError instanceof CustomError) {
     return {
       code: error.originalError.code,
