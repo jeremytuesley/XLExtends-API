@@ -25,7 +25,7 @@ const initializeServer = async () => {
 
   app.use(
     cors({
-      origin: process.env.NODE_ENV === 'dev' ? '*' : 'https://xlextends-client.herokuapp.com',
+      origin: process.env.CLIENT_URL,
     }),
   );
   app.use(graphqlUploadExpress());
