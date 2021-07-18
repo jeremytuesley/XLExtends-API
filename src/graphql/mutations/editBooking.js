@@ -31,7 +31,7 @@ const editBooking = async (
     { new: true },
   ).populate({
     path: 'serviceId',
-    select: 'available description duration images name options price salePrice',
+    select: '_id available description duration images name options price salePrice',
     populate: { path: 'creatorId lastEditorId', select: 'email' },
   });
 

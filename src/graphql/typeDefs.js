@@ -112,6 +112,41 @@ const typeDefs = gql`
     password: String!
   }
 
+  input SUBMIT_PURCHASE_DATA {
+    comments: String
+    customer: CUSTOMER_INPUT_DATA!
+    paymentId: ID!
+    productId: ID
+    serviceId: ID
+    shippingAddress: SHIPPING_ADDRESS_DATA
+  }
+
+  type Purchase {
+    _id: ID!
+    comments: String
+    customer: CustomerData!
+    paymentId: ID!
+    productId: Product
+    serviceId: Service
+    shippingAddress: ShippingAddress
+  }
+
+  input SHIPPING_ADDRESS_DATA {
+    streetName: String!
+    number: Int!
+    suburb: String!
+    postcode: Int!
+    state: String!
+  }
+
+  type ShippingAddress {
+    streetName: String!
+    number: Int!
+    suburb: String!
+    postcode: Int!
+    state: String!
+  }
+
   type Admin {
     email: String!
   }
@@ -121,6 +156,7 @@ const typeDefs = gql`
   }
 
   type Booking {
+    _id: ID!
     customer: CustomerData!
     comments: String
     duration: Int!
@@ -143,10 +179,10 @@ const typeDefs = gql`
   }
 
   type Product {
+    _id: ID!
     available: Boolean!
     creatorId: Admin!
     description: String!
-    _id: ID!
     images: [String!]!
     lastEditorId: Admin
     name: String!
@@ -156,6 +192,7 @@ const typeDefs = gql`
   }
 
   type Service {
+    _id: ID!
     available: Boolean!
     creatorId: Admin!
     description: String!
@@ -188,6 +225,8 @@ const typeDefs = gql`
     editBooking(editBookingData: EDIT_BOOKING_DATA): Booking!
     editProduct(editProductData: EDIT_PRODUCT_DATA): Product!
     editService(editServiceData: EDIT_SERVICE_DATA): Service!
+
+    submitPurchase(submitPurchaseData: SUBMIT_PURCHASE_DATA): Purchase!
   }
 
   type Query {
