@@ -245,13 +245,13 @@ const typeDefs = gql`
     paymentIntent(paymentIntentData: PAYMENT_INTENT_DATA): ClientSecret!
   }
 
+  type ClientSecret {
+    clientSecret: String!
+  }
+
   input PAYMENT_INTENT_DATA {
     productId: [ID]
     serviceId: [ID]
-  }
-
-  type ClientSecret {
-    clientSecret: String!
   }
 `;
 
