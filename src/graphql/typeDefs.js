@@ -239,7 +239,19 @@ const typeDefs = gql`
     getService(getServiceData: GET_SERVICE_DATA): Service!
 
     login(loginData: LOGIN_DATA): AuthToken!
+
     signRequest: SignatureData!
+
+    paymentIntent(paymentIntentData: PAYMENT_INTENT_DATA): ClientSecret!
+  }
+
+  input PAYMENT_INTENT_DATA {
+    productId: [ID]
+    serviceId: [ID]
+  }
+
+  type ClientSecret {
+    clientSecret: String!
   }
 `;
 
