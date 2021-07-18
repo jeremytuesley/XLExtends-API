@@ -22,8 +22,12 @@ const initializeServer = async () => {
   await server.start();
 
   app.use(express.json());
-  // TODO: Put right origin.
-  app.use(cors({ origin: 'https://xlextends-client.herokuapp.com' }));
+
+  app.use(
+    cors({
+      origin: process.env.NODE_ENV === 'dev' ? '*' : 'https://xlextends-client.herokuapp.com',
+    }),
+  );
   app.use(graphqlUploadExpress());
 
   server.applyMiddleware({ app, path: '/v1/graphql' });
