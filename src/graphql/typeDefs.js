@@ -116,7 +116,7 @@ const typeDefs = gql`
     comments: String
     customer: CUSTOMER_INPUT_DATA!
     paymentId: ID!
-    productId: ID
+    productId: [ID]
     serviceId: ID
     shippingAddress: SHIPPING_ADDRESS_DATA
   }
@@ -126,7 +126,7 @@ const typeDefs = gql`
     comments: String
     customer: CustomerData!
     paymentId: ID!
-    productId: Product
+    productId: [Product]
     serviceId: Service
     shippingAddress: ShippingAddress
   }
