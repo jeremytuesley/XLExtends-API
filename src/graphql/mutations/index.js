@@ -13,6 +13,8 @@ const { editBooking } = require('./editBooking');
 const { editProduct } = require('./editProduct');
 const { editService } = require('./editService');
 
+const { submitPurchase } = require('./submitPurchase');
+
 module.exports = {
   contact,
 
@@ -28,4 +30,6 @@ module.exports = {
   editBooking,
   editProduct,
   editService,
+
+  submitPurchase,
 };

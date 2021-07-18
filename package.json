@@ -24,6 +24,7 @@
     "luxon": "^2.0.1",
     "mongoose": "^5.13.2",
     "nodemailer":"^6.6.3",
+    "stripe": "^8.163.0",
     "validator": "^13.6.0"
   },
   "devDependencies": {
