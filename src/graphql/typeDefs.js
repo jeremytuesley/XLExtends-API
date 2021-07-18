@@ -143,10 +143,10 @@ const typeDefs = gql`
   }
 
   type Product {
+    _id: ID!
     available: Boolean!
     creatorId: Admin!
     description: String!
-    _id: ID!
     images: [String!]!
     lastEditorId: Admin
     name: String!
@@ -156,10 +156,10 @@ const typeDefs = gql`
   }
 
   type Service {
+    _id: ID!
     available: Boolean!
     creatorId: Admin!
     description: String!
-    _id: ID!
     duration: Int!
     images: [String!]!
     lastEditorId: Admin
@@ -192,9 +192,7 @@ const typeDefs = gql`
   }
 
   type Query {
-    checkAvailability(
-      checkAvailabilityData: CHECK_AVAILABILITY_DATA
-    ): [Booking!]!
+    checkAvailability(checkAvailabilityData: CHECK_AVAILABILITY_DATA): [Booking!]!
 
     getAllProducts: [Product!]!
     getAllServices: [Service!]!
