@@ -1,6 +1,7 @@
 const { ObjectId } = require('mongoose').Types;
 const stripe = require('stripe')(process.env.STRIPE_API_KEY);
 
+const DiscountCode = require('../../models/discountCode');
 const Product = require('../../models/product');
 const Service = require('../../models/service');
 
@@ -33,10 +34,24 @@ const paymentIntent = async (
     );
   }
 
+  let targetDiscountCode;
+
+  if (discount) {
+    try {
+      targetDiscountCode = await DiscountCode.findOne({ name: discount });
+    } catch {
+      () => {};
+    }
+  }
+
   let total = parseFloat((productsTotal + servicesTotal).toFixed(2)) * 100;
 
+  if (targetDiscountCode) {
+    total = (total * parseFloat((100 - targetDiscountCode.amount) / 100).toFixed(2)).toFixed(0);
+  }
+
   if (shipping) {
-    total += 1500;
+    total = parseInt(total) + 1500;
   }
 
   const intent = await stripe.paymentIntents.create({ amount: total, currency: 'aud' });
