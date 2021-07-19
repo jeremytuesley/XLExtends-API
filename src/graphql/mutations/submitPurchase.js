@@ -7,9 +7,21 @@ const Service = require('../../models/service');
 
 const submitPurchase = async (
   _,
-  { submitPurchaseData: { comments, customer, paymentId, productId, serviceId, shippingAddress } },
+  {
+    submitPurchaseData: {
+      comments,
+      customer,
+      options,
+      paymentId,
+      productId,
+      serviceId,
+      shippingAddress,
+    },
+  },
 ) => {
   const errors = [];
+
+  console.log(options);
 
   if (!customer) errors.push({ message: 'Customer data is required.' });
   if (!paymentId) errors.push({ message: 'Payment id is required.' });
@@ -36,6 +48,7 @@ const submitPurchase = async (
   const newPurchase = new Purchase({
     comments,
     customer,
+    options,
     paymentId,
     ...(productId && [...productId.map((id) => ObjectId(id))]),
     ...(serviceId && { serviceId }),
