@@ -115,6 +115,7 @@ const typeDefs = gql`
   input SUBMIT_PURCHASE_DATA {
     comments: String
     customer: CUSTOMER_INPUT_DATA!
+    options: String
     paymentId: ID!
     productId: [ID]
     serviceId: ID
@@ -125,6 +126,7 @@ const typeDefs = gql`
     _id: ID!
     comments: String
     customer: CustomerData!
+    options: String
     paymentId: ID!
     productId: [Product]
     serviceId: Service

@@ -11,6 +11,7 @@ module.exports = model(
         lastName: { required: true, type: String },
         phoneNumber: { required: true, type: String },
       },
+      options: { required: false, type: String },
       paymentId: { required: true, type: String },
       productId: { required: false, ref: 'Product', type: Schema.Types.ObjectId },
       serviceId: { required: false, ref: 'Service', type: Schema.Types.ObjectId },
