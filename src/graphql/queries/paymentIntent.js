@@ -4,7 +4,10 @@ const stripe = require('stripe')(process.env.STRIPE_API_KEY);
 const Product = require('../../models/product');
 const Service = require('../../models/service');
 
-const paymentIntent = async (_, { paymentIntentData: { productId, serviceId } }) => {
+const paymentIntent = async (
+  _,
+  { paymentIntentData: { productId, serviceId, discount, shipping } },
+) => {
   let productsTotal;
   let servicesTotal;
 
@@ -30,7 +33,11 @@ const paymentIntent = async (_, { paymentIntentData: { productId, serviceId } })
     );
   }
 
-  const total = parseFloat((productsTotal + servicesTotal).toFixed(2)) * 100;
+  let total = parseFloat((productsTotal + servicesTotal).toFixed(2)) * 100;
+
+  if (shipping) {
+    total += 1500;
+  }
 
   const intent = await stripe.paymentIntents.create({ amount: total, currency: 'aud' });
 
