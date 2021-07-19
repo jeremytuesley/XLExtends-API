@@ -1,4 +1,6 @@
-const sgMail = require('@sendgrid/mail');
+// const sgMail = require('@sendgrid/mail');
+const fs = require('fs');
+const nodemailer = require('nodemailer');
 const path = require('path');
 const validator = require('validator');
 
@@ -42,41 +44,76 @@ const contact = async (_, { contactData: { comments, contact, files, name } }) =
     ),
   );
 
-  const message = {
-    to: 'o.zahnitko@gmail.com',
-    from: 'js.t3a2@gmail.com',
-    subject: `${name} left you a message.`,
-    attachments: resolvedFiles.map(({ filename, mimetype }, index) => ({
-      content: readFiles[index].toString('base64'),
-      filename,
-      type: mimetype,
-      disposition: 'attachment',
-    })),
-    html: `<div>
-    <h1>${name} is trying to get in touch.</h1>
-    <h2>Comments</h2>
-    <div>
-    ${comments}
-    </div>
-    <h2>Contact</h2>
-    <div>
-    ${contact}
-</div>
-    </div>`,
-  };
+  //   const message = {
+  //     to: 'o.zahnitko@gmail.com',
+  //     from: 'js.t3a2@gmail.com',
+  //     subject: `${name} left you a message.`,
+  //     attachments: resolvedFiles.map(({ filename, mimetype }, index) => ({
+  //       content: readFiles[index].toString('base64'),
+  //       filename,
+  //       type: mimetype,
+  //       disposition: 'attachment',
+  //     })),
+  //     html: `<div>
+  //     <h1>${name} is trying to get in touch.</h1>
+  //     <h2>Comments</h2>
+  //     <div>
+  //     ${comments}
+  //     </div>
+  //     <h2>Contact</h2>
+  //     <div>
+  //     ${contact}
+  // </div>
+  //     </div>`,
+  //   };
 
-  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+  // sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+
+  // try {
+
+  //   await sgMail.send(message);
+  //   return true;
+  // } catch (error) {
+  //   console.log(error);
+  //   return false;
+  // }
+
+  const transporter = nodemailer.createTransport({
+    host: 'smtp.ethereal.email',
+    port: 587,
+    auth: {
+      user: process.env.NODEMAILER_USERNAME,
+      pass: process.env.NODEMAILER_PASSWORD,
+    },
+  });
 
   try {
+    const emailSentResponse = await transporter.sendMail({
+      from: 'js.t3a2@gmail.com',
+      to: 'o.zahnitko@gmail.com',
+      subject: `Hello from ${name}`,
+      attachments: readFiles.map(({ filename }, index) => ({
+        content: readFiles[index],
+        filename,
+        encoding: 'base64',
+      })),
+      text: 'Hello world.',
+      html: `<div>
+      <h1>${name} is trying to get in touch</h1>
+      <div>${comments}</div>
+      </div>`,
+    });
+
+    console.log(emailSentResponse);
+
     await Promise.all(
       resolvedFiles.map(({ filename }) =>
         fsUnlinkPromise(path.join(__dirname, 'attachments', filename)),
       ),
     );
-    await sgMail.send(message);
+    fs.rmdir(path.join(__dirname, 'attachments'), () => {});
     return true;
-  } catch (error) {
-    console.log(error);
+  } catch {
     return false;
   }
 };

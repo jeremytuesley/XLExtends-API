@@ -252,6 +252,8 @@ const typeDefs = gql`
   input PAYMENT_INTENT_DATA {
     productId: [ID]
     serviceId: [ID]
+    discount: String
+    shipping: Boolean!
   }
 `;
 
