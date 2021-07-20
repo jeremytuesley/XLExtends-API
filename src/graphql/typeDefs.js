@@ -240,6 +240,7 @@ const typeDefs = gql`
     getProduct(getProductData: GET_PRODUCT_DATA): Product!
     getService(getServiceData: GET_SERVICE_DATA): Service!
 
+    isAuth: Boolean!
     login(loginData: LOGIN_DATA): AuthToken!
 
     signRequest: SignatureData!
