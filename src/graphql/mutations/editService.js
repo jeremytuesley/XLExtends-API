@@ -34,11 +34,6 @@ const editService = async (
 
   if (errors.length) throw new BadUserInputError(errors);
 
-  const existingService = await Service.findOne({ name });
-
-  if (existingService)
-    throw new BadUserInputError({ message: `Service with name - ${name} - already exists.` });
-
   return await Service.findOneAndUpdate(
     { _id: serviceId },
     {
