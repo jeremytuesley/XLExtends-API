@@ -44,7 +44,8 @@ const paymentIntent = async (
     }
   }
 
-  let total = parseFloat((productsTotal + servicesTotal).toFixed(2)) * 100;
+  let total = productsTotal || servicesTotal;
+  total = parseFloat(total.toFixed(2)) * 100;
 
   if (targetDiscountCode) {
     total = (total * parseFloat((100 - targetDiscountCode.amount) / 100).toFixed(2)).toFixed(0);
