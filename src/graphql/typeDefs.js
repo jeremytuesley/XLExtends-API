@@ -229,10 +229,12 @@ const typeDefs = gql`
     editService(editServiceData: EDIT_SERVICE_DATA): Service!
 
     submitPurchase(submitPurchaseData: SUBMIT_PURCHASE_DATA): Purchase!
+
+    setAvailability(setAvailabilityData: SET_AVAILABILITY_DATA): String!
   }
 
   type Query {
-    checkAvailability(checkAvailabilityData: CHECK_AVAILABILITY_DATA): [Booking!]!
+    checkAvailability(checkAvailabilityData: CHECK_AVAILABILITY_DATA): [String]!
 
     getAllProducts: [Product!]!
     getAllServices: [Service!]!
@@ -246,6 +248,10 @@ const typeDefs = gql`
     signRequest: SignatureData!
 
     paymentIntent(paymentIntentData: PAYMENT_INTENT_DATA): ClientSecret!
+  }
+
+  input SET_AVAILABILITY_DATA {
+    date: String!
   }
 
   type ClientSecret {

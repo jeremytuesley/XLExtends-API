@@ -1,24 +1,34 @@
 const { DateTime } = require('luxon');
 
+const Availability = require('../../models/availability');
 const Booking = require('../../models/booking');
 
-const checkAvailability = (_, { checkAvailabilityData: { quantity, timeUnit } }) => {
-  const now = DateTime.now();
+const checkAvailability = async (_, { checkAvailabilityData: { quantity, timeUnit } }) => {
+  const endAvailabilityDateCheck = DateTime.now()
+    .plus({ [timeUnit]: quantity })
+    .toISODate();
 
-  const endAvailabilityDate = now.plus({ [timeUnit]: quantity });
+  const [unAvailabilities, bookings] = await Promise.all([
+    Availability.find({
+      date: {
+        $lte: endAvailabilityDateCheck,
+      },
+    }),
+    Booking.find({
+      startTime: {
+        $lte: endAvailabilityDateCheck,
+      },
+    }),
+  ]);
 
-  const booked = Booking.find({
-    startTime: { $lte: endAvailabilityDate.toISODate() },
-  }).populate({
-    path: 'serviceId',
-    select: 'available description duration images name options price salePrice',
-    populate: [
-      { path: 'creatorId', select: 'email' },
-      { path: 'lastEditorId', select: 'email' },
-    ],
-  });
-
-  return booked;
+  return new Set([
+    ...bookings.map((booking) =>
+      DateTime.fromISO(new Date(booking.startTime).toISOString()).toISODate(),
+    ),
+    ...unAvailabilities.map((unAvailability) =>
+      DateTime.fromISO(new Date(unAvailability.date).toISOString()).toISODate(),
+    ),
+  ]);
 };
 
 module.exports = { checkAvailability };
