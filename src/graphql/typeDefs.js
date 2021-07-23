@@ -112,27 +112,6 @@ const typeDefs = gql`
     password: String!
   }
 
-  input SUBMIT_PURCHASE_DATA {
-    comments: String
-    customer: CUSTOMER_INPUT_DATA!
-    options: String
-    paymentId: ID!
-    productId: [ID]
-    serviceId: ID
-    shippingAddress: SHIPPING_ADDRESS_DATA
-  }
-
-  type Purchase {
-    _id: ID!
-    comments: String
-    customer: CustomerData!
-    options: String
-    paymentId: ID!
-    productId: [Product]
-    serviceId: Service
-    shippingAddress: ShippingAddress
-  }
-
   input SHIPPING_ADDRESS_DATA {
     streetName: String!
     number: Int!
@@ -250,19 +229,45 @@ const typeDefs = gql`
     paymentIntent(paymentIntentData: PAYMENT_INTENT_DATA): ClientSecret!
   }
 
+  input SUBMIT_PURCHASE_DATA {
+    comments: String
+    customer: CUSTOMER_INPUT_DATA!
+    options: String
+    paymentId: ID!
+    productId: [ID]
+    serviceId: ID
+    shippingAddress: SHIPPING_ADDRESS_DATA
+  }
+
+  type Purchase {
+    _id: ID!
+    comments: String
+    customer: CustomerData!
+    options: String
+    paymentId: ID!
+    productId: [Product]
+    serviceId: Service
+    shippingAddress: ShippingAddress
+  }
+
   input SET_AVAILABILITY_DATA {
     date: String!
   }
 
-  type ClientSecret {
-    clientSecret: String!
-  }
-
   input PAYMENT_INTENT_DATA {
-    productId: [ID]
+    productId: [PRODUCT_ORDER]
     serviceId: [ID]
     discount: String
     shipping: Boolean!
+  }
+
+  input PRODUCT_ORDER {
+    id: ID!
+    quantity: Int!
+  }
+
+  type ClientSecret {
+    clientSecret: String!
   }
 `;
 
