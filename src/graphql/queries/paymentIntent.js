@@ -1,9 +1,12 @@
 const { ObjectId } = require('mongoose').Types;
 const stripe = require('stripe')(process.env.STRIPE_API_KEY);
 
+const { BadUserInputError } = require('../../errors/CustomErrors');
 const DiscountCode = require('../../models/discountCode');
 const Product = require('../../models/product');
 const Service = require('../../models/service');
+
+const SHIPPING_FLAT_FEE = 1500;
 
 const paymentIntent = async (
   _,
@@ -11,14 +14,18 @@ const paymentIntent = async (
 ) => {
   let productsTotal;
   let servicesTotal;
+  let targetDiscountCode;
 
   if (productId) {
     const requestedProducts = await Product.find({
-      _id: { $in: productId.map((id) => ObjectId(id)) },
+      _id: { $in: productId.map(({ id }) => ObjectId(id)) },
     });
 
     productsTotal = requestedProducts.reduce(
-      (total, product) => total + (product.salePrice || product.price),
+      (total, product) =>
+        total +
+        (product.salePrice || product.price) *
+          productId.find((p) => p.id === product._id.toString()).quantity,
       0,
     );
   }
@@ -34,28 +41,21 @@ const paymentIntent = async (
     );
   }
 
-  let targetDiscountCode;
+  let total = parseFloat(productsTotal || servicesTotal).toFixed(2) * 100;
 
   if (discount) {
-    try {
-      targetDiscountCode = await DiscountCode.findOne({ name: discount });
-    } catch {
-      () => {};
-    }
-  }
-
-  let total = productsTotal || servicesTotal;
-  total = parseFloat(total.toFixed(2)) * 100;
-
-  if (targetDiscountCode) {
-    total = (total * parseFloat((100 - targetDiscountCode.amount) / 100).toFixed(2)).toFixed(0);
+    targetDiscountCode = await DiscountCode.findOne({ name: discount });
+    if (targetDiscountCode)
+      total = (total * parseFloat((100 - targetDiscountCode.amount) / 100).toFixed(2)).toFixed(0);
+    else throw new BadUserInputError({ message: 'Invalid discount code.' });
   }
 
   if (shipping) {
-    total = parseInt(total) + 1500;
+    total = parseInt(total) + SHIPPING_FLAT_FEE;
   }
-
   const intent = await stripe.paymentIntents.create({ amount: total, currency: 'aud' });
+
+  console.log(total);
 
   return { clientSecret: intent.client_secret };
 };
