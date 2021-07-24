@@ -234,7 +234,7 @@ const typeDefs = gql`
     customer: CUSTOMER_INPUT_DATA!
     options: String
     paymentId: ID!
-    productId: [ID]
+    productId: [PRODUCT_ORDER]
     serviceId: ID
     shippingAddress: SHIPPING_ADDRESS_DATA
   }

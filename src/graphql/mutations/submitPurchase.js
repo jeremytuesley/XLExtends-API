@@ -19,9 +19,9 @@ const submitPurchase = async (
     },
   },
 ) => {
-  const errors = [];
+  console.log(productId);
 
-  console.log(options);
+  const errors = [];
 
   if (!customer) errors.push({ message: 'Customer data is required.' });
   if (!paymentId) errors.push({ message: 'Payment id is required.' });
@@ -34,7 +34,7 @@ const submitPurchase = async (
 
   if (productId) {
     targetProducts = await Product.find({
-      _id: { $in: productId.map((id) => ObjectId(id)) },
+      _id: { $in: productId.map((product) => ObjectId(product.id)) },
     }).populate({ path: 'creatorId lastEditorId', select: 'email' });
   }
 
@@ -44,13 +44,15 @@ const submitPurchase = async (
       select: 'email',
     });
   }
-
   const newPurchase = new Purchase({
     comments,
     customer,
     options,
     paymentId,
-    ...(productId && [...productId.map((id) => ObjectId(id))]),
+    // ...(productId && [...productId.map((product) => ({ ...product, id: ObjectId(product.id) }))]),
+    ...(productId && {
+      productId: [...productId.map((product) => ({ ...product, id: ObjectId(product.id) }))],
+    }),
     ...(serviceId && { serviceId }),
     shippingAddress,
   });
