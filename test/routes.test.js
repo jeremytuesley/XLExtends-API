@@ -10,9 +10,8 @@ const { createTestDatabase } = require('./test-database');
 const expect = chai.expect;
 
 describe('XLExtends-API tests:', () => {
-  let app;
-
   let adminToken;
+  let app;
 
   before(async () => {
     const [{ app: server }] = await Promise.all([initializeServer(), createTestDatabase()]);
@@ -330,6 +329,40 @@ describe('XLExtends-API tests:', () => {
           );
       });
     });
+
+    it('Generate Stripe api secret', (done) => {
+      request(app)
+        .post('/v1/graphql')
+        .send({
+          query: `
+        query PaymentIntent($paymentIntentData: PAYMENT_INTENT_DATA) {
+          paymentIntent(paymentIntentData: $paymentIntentData) {
+            clientSecret
+          }
+        }`,
+          variables: {
+            paymentIntentData: {
+              productId: [{ id: firstProduct._id.toString(), quantity: 2 }],
+              shipping: true,
+            },
+          },
+        })
+        .expect(200)
+        .end(
+          (
+            err,
+            {
+              body: {
+                data: { paymentIntent },
+              },
+            },
+          ) => {
+            if (err) done(err);
+            expect(paymentIntent).to.have.property('clientSecret');
+            done();
+          },
+        );
+    });
   });
 
   describe('Services', () => {
@@ -502,4 +535,6 @@ describe('XLExtends-API tests:', () => {
       });
     });
   });
+
+  describe('Payment intent', () => {});
 });
