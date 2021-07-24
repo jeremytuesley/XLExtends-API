@@ -26,6 +26,7 @@
     "mongoose": "^5.13.2",
     "nodemailer": "^6.6.3",
     "stripe": "^8.163.0",
+    "uuid": "^8.3.2",
     "validator": "^13.6.0"
   },
   "devDependencies": {

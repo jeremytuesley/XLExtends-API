@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { v4: uuidv4 } = require('uuid');
 
 const Product = require('../src/models/product');
 const Service = require('../src/models/service');
@@ -15,19 +16,19 @@ const createTestDatabase = async () => {
   );
 
   await Promise.all([
-    ...Array.from({ length: 5 }, (_, index) => index + 1).map((id) =>
+    ...Array.from({ length: 5 }, (_, index) => index).map(() =>
       new Product({
         available: true,
         creatorId: '60ed5ef6582869002b875bd8',
-        name: `New Product ${id}`,
+        name: `New Product ${uuidv4()}`,
         price: 99,
       }).save(),
     ),
-    ...Array.from({ length: 5 }, (_, index) => index + 1).map((id) =>
+    ...Array.from({ length: 5 }, (_, index) => index).map(() =>
       new Service({
         available: true,
         creatorId: '60ed5ef6582869002b875bd8',
-        name: `New Service ${id}`,
+        name: `New Service ${uuidv4()}`,
         price: 99,
       }).save(),
     ),
