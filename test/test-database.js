@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const { v4: uuidv4 } = require('uuid');
 
+const DiscountCode = require('../src/models/discountCode');
 const Product = require('../src/models/product');
 const Service = require('../src/models/service');
 
@@ -32,6 +33,7 @@ const createTestDatabase = async () => {
         price: 99,
       }).save(),
     ),
+    new DiscountCode({ name: 'DISCOUNT_5', amount: 5 }).save(),
   ]);
 };
 

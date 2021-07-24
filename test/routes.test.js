@@ -342,6 +342,7 @@ describe('XLExtends-API tests:', () => {
         }`,
           variables: {
             paymentIntentData: {
+              discount: 'DISCOUNT_5',
               productId: [{ id: firstProduct._id.toString(), quantity: 2 }],
               shipping: true,
             },
