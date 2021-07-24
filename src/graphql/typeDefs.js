@@ -45,6 +45,52 @@ const typeDefs = gql`
     email: String!
     password: String!
   }
+
+  input CREATE_NEW_BOOKING_DATA {
+    comments: String
+    customer: CUSTOMER_INPUT_DATA!
+    duration: Int!
+    paymentId: ID!
+    serviceId: ID!
+    startTime: String!
+  }
+
+  input CREATE_NEW_PRODUCT_DATA {
+    available: Boolean!
+    description: String!
+    images: [String]
+    name: String!
+    options: [String]
+    price: Float!
+    salePrice: Float
+  }
+
+  type AuthToken {
+    authToken: String!
+  }
+
+  type Booking {
+    _id: ID!
+    customer: CustomerData!
+    comments: String
+    duration: Int!
+    paymentId: ID!
+    serviceId: Service!
+    startTime: String!
+  }
+
+  type Product {
+    _id: ID!
+    available: Boolean!
+    creatorId: Admin!
+    description: String!
+    images: [String]
+    lastEditorId: Admin
+    name: String!
+    options: [String]
+    price: Float!
+    salePrice: Float
+  }
 `;
 
 module.exports = { typeDefs };
