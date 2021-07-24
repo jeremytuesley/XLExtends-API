@@ -9,10 +9,7 @@ const { Readable } = require('stream');
 const request = require('supertest');
 
 // TODO: Create test database
-const {
-  createDatabaseConnection,
-  createTestDatabase,
-} = require('../src/database/createDatabaseConnection');
+const { createDatabaseConnection } = require('../src/database/createDatabaseConnection');
 const resolvers = require('../src/graphql/resolvers');
 const { initializeServer } = require('../src/server');
 const { typeDefs } = require('../src/graphql/typeDefs');

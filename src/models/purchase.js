@@ -13,7 +13,12 @@ module.exports = model(
       },
       options: { required: false, type: String },
       paymentId: { required: true, type: String },
-      productId: { required: false, ref: 'Product', type: Schema.Types.ObjectId },
+      productId: [
+        {
+          product: { required: false, ref: 'Product', type: Schema.Types.ObjectId },
+          quantity: { default: 1, required: true, type: Number },
+        },
+      ],
       serviceId: { required: false, ref: 'Service', type: Schema.Types.ObjectId },
       shippingAddress: {
         streetName: { required: this.productId, type: String },
