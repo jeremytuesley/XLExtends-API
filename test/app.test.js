@@ -1,500 +1,433 @@
 require('dotenv').config();
 
-const { ApolloServer } = require('apollo-server-express');
 const chai = require('chai');
-const fs = require('fs');
-const { Upload } = require('graphql-upload');
-const path = require('path');
-const { Readable } = require('stream');
+const mongoose = require('mongoose');
 const request = require('supertest');
 
-// TODO: Create test database
-const { createDatabaseConnection } = require('../src/database/createDatabaseConnection');
-const resolvers = require('../src/graphql/resolvers');
 const { initializeServer } = require('../src/server');
-const { typeDefs } = require('../src/graphql/typeDefs');
-
-const { handleErrors } = require('../src/errors/handleErrors');
-
-let app;
-
-(async () => {
-  const { app: server } = await initializeServer();
-
-  app = server;
-})();
-
-(async () => {
-  await createDatabaseConnection();
-})();
+const { createTestDatabase } = require('./test-database');
 
 const expect = chai.expect;
 
-const server = new ApolloServer({ resolvers, typeDefs, uploads: false });
+describe('XLExtends-API tests:', () => {
+  let app;
 
-describe('Fetch All', () => {
-  it('fetches all ', (done) => {
-    request(app)
-      .post('/v1/graphql')
-      .send({
-        query: `
+  let adminToken;
+
+  before(async () => {
+    const [{ app: server }] = await Promise.all([initializeServer(), createTestDatabase()]);
+
+    app = server;
+  });
+
+  after(async () => {
+    mongoose.connection.db.dropDatabase(() => {
+      console.log('Test database dropped.');
+    });
+  });
+
+  describe('Admin', () => {
+    it('Create a new admin', (done) => {
+      request(app)
+        .post('/v1/graphql')
+        .send({
+          query: `
+        mutation CreateNewAdmin(
+          $createNewAdminData: CREATE_NEW_ADMIN_DATA
+        ) {
+          createNewAdmin(createNewAdminData: $createNewAdminData) {
+            authToken
+          }
+        }
+        `,
+          variables: { createNewAdminData: { email: 'user@email.com', password: 'password' } },
+        })
+        .expect(200)
+        .end(
+          async (
+            err,
+            {
+              body: {
+                data: { createNewAdmin },
+              },
+            },
+          ) => {
+            if (err) done(err);
+            expect(createNewAdmin).to.have.property('authToken');
+            adminToken = createNewAdmin.authToken;
+            done();
+          },
+        );
+    });
+
+    it('Log in with correct credentials', (done) => {
+      request(app)
+        .post('/v1/graphql')
+        .send({
+          query: `
+          query Login($loginData: LOGIN_DATA) {
+            login(loginData: $loginData) {
+              authToken
+            }
+          }
+          `,
+          variables: { loginData: { email: 'user@email.com', password: 'password' } },
+        })
+        .expect(200)
+        .end(
+          (
+            err,
+            {
+              body: {
+                data: { login },
+              },
+            },
+          ) => {
+            if (err) done(err);
+
+            expect(login).to.have.property('authToken');
+            done();
+          },
+        );
+    });
+  });
+
+  describe('Products', () => {
+    let firstProduct;
+
+    it('Fetch all products', (done) => {
+      request(app)
+        .post('/v1/graphql')
+        .send({
+          query: `
         query GetAllProducts {
+          getAllProducts {
+            _id
+            name
+          }
+        }
+        `,
+        })
+        .expect(200)
+        .end(
+          (
+            err,
+            {
+              body: {
+                data: { getAllProducts },
+              },
+            },
+          ) => {
+            if (err) done(err);
+            expect(getAllProducts).to.have.length(5);
+            firstProduct = getAllProducts[0];
+            done();
+          },
+        );
+    });
+
+    it('Fetch a single product', (done) => {
+      request(app)
+        .post('/v1/graphql')
+        .send({
+          query: `
+          query GetProduct(
+            $getProductData: GET_PRODUCT_DATA
+          ) {
+            getProduct(getProductData: $getProductData) {
+              _id
+              name
+            }
+          }
+          `,
+          variables: {
+            getProductData: {
+              productId: firstProduct._id,
+            },
+          },
+        })
+        .expect(200)
+        .end(
+          (
+            err,
+            {
+              body: {
+                data: { getProduct },
+              },
+            },
+          ) => {
+            if (err) done(err);
+            expect(getProduct.name).to.have.string(firstProduct.name);
+            done();
+          },
+        );
+    });
+
+    it('Create a new product', (done) => {
+      request(app)
+        .post('/v1/graphql')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({
+          query: `
+          mutation CreateNewProduct(
+            $createNewProductData: CREATE_NEW_PRODUCT_DATA
+          ) {
+            createNewProduct(createNewProductData: $createNewProductData) {
+              _id
+              name
+            }
+          }
+          `,
+          variables: {
+            createNewProductData: {
+              available: true,
+              description: 'New Product Description - 1',
+              name: 'Test Product - 1',
+              price: 1.99,
+            },
+          },
+        })
+        .expect(200)
+        .end(
+          (
+            err,
+            {
+              body: {
+                data: { createNewProduct },
+              },
+            },
+          ) => {
+            if (err) done(err);
+
+            expect(createNewProduct).to.have.property('_id');
+            expect(createNewProduct).to.have.property('name');
+            expect(createNewProduct.name).to.have.string('Test Product - 1');
+            done();
+          },
+        );
+    });
+
+    describe('Delete product', () => {
+      it('Delete a product', (done) => {
+        request(app)
+          .post('/v1/graphql')
+          .set('Authorization', `Bearer ${adminToken}`)
+          .send({
+            query: `
+          mutation DeleteProduct($deleteProductData: DELETE_PRODUCT_DATA) {
+            deleteProduct(deleteProductData: $deleteProductData)
+          }
+          `,
+            variables: { deleteProductData: { productId: firstProduct._id } },
+          })
+          .expect(200)
+          .end((err, { body: { data } }) => {
+            if (err) done(err);
+            expect(data).to.deep.equal({ deleteProduct: true });
+            done();
+          });
+      });
+
+      it('Database reflects deletion', (done) => {
+        request(app)
+          .post('/v1/graphql')
+          .send({
+            query: `
+          query GetAllProducts {
             getAllProducts {
-                _id
+              _id 
+              name
             }
-        }
-      `,
-      })
-      .expect(200)
-      .end((err, res) => {
-        if (err) done(err);
-        expect(res.body.data.getAllProducts[0]._id).to.have.string('60ed73cbac30625165d5dbd5');
-        done();
-      });
-  });
-});
-
-describe('Fetch product', () => {
-  it('fetches a single product by id', (done) => {
-    request(app)
-      .post('/v1/graphql')
-      .send({
-        query: `
-            query GetProduct($productId: ID!) {
-                getProduct(getProductData: {
-                    productId: $productId
-                }) {
-                    _id
-                }
-            }
-            `,
-        variables: { productId: '60ed73cbac30625165d5dbd5' },
-      })
-      .expect(200)
-      .end((err, res) => {
-        if (err) return done(err);
-        expect(res.body.data.getProduct._id).to.have.string('60ed73cbac30625165d5dbd5');
-        done();
-      });
-  });
-
-  it('return error when no product id provided', (done) => {
-    request(app)
-      .post('/v1/graphql')
-      .send({
-        query: `
-          query GetProduct($productId: ID!) {
-            getProduct(getProductData: {
-                productId: $productId
-            }) {
-                _id
-            }
-        }
-          `,
-        variables: { productId: '' },
-      })
-      .expect(200)
-      .end((err, res) => {
-        if (err) return done(err);
-        expect(res.body.errors[0].data.message).to.have.string('Product ID is required.');
-        done();
-      });
-  });
-
-  it('returns error when product not found', (done) => {
-    request(app)
-      .post('/v1/graphql')
-      .send({
-        query: `
-          query GetProduct($productId: ID!) {
-            getProduct(getProductData: {
-                productId: $productId
-            }) {
-                _id
-            }
-        }
-          `,
-        variables: { productId: '60ed73cbac30625165d5dbd2' },
-      })
-      .expect(200)
-      .end((err, res) => {
-        if (err) return done(err);
-        expect(res.body.errors[0].data.message).to.have.string('Invalid product ID.');
-        done();
-      });
-  });
-});
-
-describe('Sign request', () => {
-  it('signs an image upload request', (done) => {
-    request(app)
-      .post('/v1/graphql')
-      .send({
-        query: `
-                  query SignRequest {
-                      signRequest {
-                          signature
-                          timestamp
-                      }
-                  }
-              `,
-      })
-      .expect(200)
-      .end((err, res) => {
-        if (err) return done(err);
-
-        expect(res.body.data).not.to.be.empty;
-        done();
-      });
-  });
-});
-
-describe('Login', () => {
-  it('logs in with valid credentials', (done) => {
-    request(app)
-      .post('/v1/graphql')
-      .send({
-        query: `
-        query Login($email: String!, $password: String!) {
-            login(loginData:{email: $email,
-                password: $password}) {
-                authToken
-            }
-        }
-      `,
-        variables: { email: 'user@email.com', password: 'password' },
-      })
-      .expect(200)
-      .end((err, res) => {
-        if (err) return done(err);
-        expect(res.body.data.login).to.have.own.property('authToken');
-        done();
-      });
-  });
-
-  it('returns error when no email', (done) => {
-    request(app)
-      .post('/v1/graphql')
-      .send({
-        query: `
-        query Login($email: String!, $password: String!) {
-            login(loginData:{email: $email,
-                password: $password}) {
-                authToken
-            }
-        }
-      `,
-        variables: { email: '', password: 'password' },
-      })
-      .expect(200)
-      .end((err, res) => {
-        if (err) return done(err);
-        expect(res.body.errors[0].data[0].message).to.have.string('Email is required.');
-        done();
-      });
-  });
-
-  it('returns error when no password', (done) => {
-    request(app)
-      .post('/v1/graphql')
-      .send({
-        query: `
-        query Login($email: String!, $password: String!) {
-            login(loginData:{email: $email,
-                password: $password}) {
-                authToken
-            }
-        }
-      `,
-        variables: { email: 'user@email.com', password: '' },
-      })
-      .expect(200)
-      .end((err, res) => {
-        if (err) return done(err);
-        expect(res.body.errors[0].data[0].message).to.have.string('Password is required.');
-        done();
-      });
-  });
-
-  it('returns an error when user email does not exist', (done) => {
-    request(app)
-      .post('/v1/graphql')
-      .send({
-        query: `
-      query Login($email: String!, $password: String!) {
-          login(loginData:{email: $email,
-              password: $password}) {
-              authToken
           }
-      }
-    `,
-        variables: { email: 'user1@email.com', password: 'password' },
-      })
-      .expect(200)
-      .end((err, res) => {
-        if (err) return done(err);
-        expect(res.body.errors[0].code).to.have.string('BAD_USER_INPUT');
-        done();
+          `,
+          })
+          .expect(200)
+          .end(
+            (
+              err,
+              {
+                body: {
+                  data: { getAllProducts },
+                },
+              },
+            ) => {
+              if (err) done(err);
+              expect(getAllProducts).to.have.length(5);
+              done();
+            },
+          );
       });
+    });
   });
 
-  it('returns an error when passwords do not match', (done) => {
-    request(app)
-      .post('/v1/graphql')
-      .send({
-        query: `
-      query Login($email: String!, $password: String!) {
-          login(loginData:{email: $email,
-              password: $password}) {
-              authToken
+  describe('Services', () => {
+    let firstService;
+
+    it('Fetch all services', (done) => {
+      request(app)
+        .post('/v1/graphql')
+        .send({
+          query: `
+        query GetAllServices {
+          getAllServices {
+            _id
+            name
           }
+        }
+        `,
+        })
+        .expect(200)
+        .end(
+          (
+            err,
+            {
+              body: {
+                data: { getAllServices },
+              },
+            },
+          ) => {
+            if (err) done(err);
+            expect(getAllServices).to.have.length(5);
+            firstService = getAllServices[0];
+            done();
+          },
+        );
+    });
+
+    it('Fetch a single service', (done) => {
+      request(app)
+        .post('/v1/graphql')
+        .send({
+          query: `
+        query GetService(
+          $getServiceData: GET_SERVICE_DATA
+        ) {
+          getService(getServiceData: $getServiceData) {
+            _id
+            name
+          }
+        }
+        `,
+          variables: {
+            getServiceData: {
+              serviceId: firstService._id,
+            },
+          },
+        })
+        .expect(200)
+        .end(
+          (
+            err,
+            {
+              body: {
+                data: { getService },
+              },
+            },
+          ) => {
+            if (err) done(err);
+            expect(getService.name).to.have.string(firstService.name);
+            done();
+          },
+        );
+    });
+
+    it('Create a new service', (done) => {
+      request(app)
+        .post('/v1/graphql')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({
+          query: `
+          mutation CreateNewService(
+            $createNewServiceData: CREATE_NEW_SERVICE_DATA
+          ) {
+            createNewService(createNewServiceData: $createNewServiceData) {
+              _id
+              name
+            }
+          }
+          `,
+          variables: {
+            createNewServiceData: {
+              available: true,
+              description: 'New Service Description - 1',
+              duration: 100,
+              name: 'New Service Name - 1',
+              price: 9.99,
+            },
+          },
+        })
+        .expect(200)
+        .end(
+          (
+            err,
+            {
+              body: {
+                data: { createNewService },
+              },
+            },
+          ) => {
+            if (err) done(err);
+            expect(createNewService).to.have.property('_id');
+            expect(createNewService).to.have.property('name');
+            expect(createNewService.name).to.have.string('New Service Name - 1');
+            done();
+          },
+        );
+    });
+
+    describe('Delete service', () => {
+      it('Delete a service', (done) => {
+        request(app)
+          .post('/v1/graphql')
+          .set('Authorization', `Bearer ${adminToken}`)
+          .send({
+            query: `
+      mutation DeleteService(
+        $deleteServiceData: DELETE_SERVICE_DATA
+      ) {
+        deleteService(deleteServiceData: $deleteServiceData)
       }
-    `,
-        variables: { email: 'user@email.com', password: 'passwordsss' },
-      })
-      .expect(200)
-      .end((err, res) => {
-        if (err) return done(err);
-        expect(res.body.errors[0].code).to.have.string('BAD_USER_INPUT');
-        done();
-      });
-  });
-});
-
-describe('Contact', () => {
-  it('send email when all values provided', (done) => {
-    request(app)
-      .post('/v1/graphql')
-      .send({
-        query: `
-        mutation Contact(
-          $comments: String!,
-          $contact: String!,
-          $files: [Upload!]!,
-          $name: String!
-        ) {
-          contact(contactData: {
-            comments: $comments,
-            contact: $contact,
-            files: $files,
-            name: $name
+      `,
+            variables: { deleteServiceData: { serviceId: firstService._id } },
           })
-        }
-        `,
-        variables: {
-          comments: 'These are comments',
-          contact: 'these are contact details',
-          files: [],
-          name: 'This is a name',
-        },
-      })
-      .expect(200)
-      .end((err, res) => {
-        if (err) return done(err);
-        expect(res.body.data.contact).to.be.true;
-        done();
+          .expect(200)
+          .end((err, { body: { data } }) => {
+            if (err) done(err);
+            expect(data).to.deep.equal({ deleteService: true });
+            done();
+          });
       });
-  });
 
-  it('returns an error when contact is not present', (done) => {
-    request(app)
-      .post('/v1/graphql')
-      .send({
-        query: `
-        mutation Contact(
-          $comments: String!,
-          $contact: String!,
-          $files: [Upload!]!,
-          $name: String!
-        ) {
-          contact(contactData: {
-            comments: $comments,
-            contact: $contact, 
-            files: $files,
-            name: $name
+      it('Database reflects the deletion', (done) => {
+        request(app)
+          .post('/v1/graphql')
+          .send({
+            query: `
+          query GetAllServices {
+            getAllServices {
+              _id
+              name
+            }
+          }
+          `,
           })
-        }
-        `,
-        variables: {
-          comments: 'These are comments',
-          contact: '',
-          files: [],
-          name: 'This is a name',
-        },
-      })
-      .expect(200)
-      .end((err, res) => {
-        if (err) return done(err);
-        expect(res.body.errors[0].data[0].message).to.have.string('Contact details are required.');
-        done();
-      });
-  });
+          .expect(200)
+          .end(
+            (
+              err,
+              {
+                body: {
+                  data: { getAllServices },
+                },
+              },
+            ) => {
+              if (err) done(err);
 
-  it('returns an error when name is not present', (done) => {
-    request(app)
-      .post('/v1/graphql')
-      .send({
-        query: `
-        mutation Contact(
-          $comments: String!,
-          $contact: String!,
-          $files: [Upload!]!,
-          $name: String!
-        ) {
-          contact(contactData: {
-            comments: $comments,
-            contact: $contact, 
-            files: $files,
-            name: $name
-          })
-        }
-        `,
-        variables: {
-          comments: 'These are comments',
-          contact: 'These are the contact details',
-          files: [],
-          name: '',
-        },
-      })
-      .expect(200)
-      .end((err, res) => {
-        if (err) return done(err);
-        expect(res.body.errors[0].data[0].message).to.have.string('Name is required.');
-        done();
-      });
-  });
-
-  it('returns an error when too many files are added', (done) => {
-    const file = Readable.from(Buffer.from('This is just a test.', 'utf-8'));
-    const upload = new Upload();
-    upload.promise = new Promise((resolve) => {
-      return resolve({
-        createReadStream: () => file,
-        filename: 'some_file.txt',
-        mimetype: 'plain/text',
+              expect(getAllServices).to.have.length(5);
+              done();
+            },
+          );
       });
     });
-
-    server
-      .executeOperation({
-        query: `
-    mutation Contact(
-      $comments: String!,
-      $contact: String!,
-      $files: [Upload!]!,
-      $name: String!
-    ) {
-      contact(contactData: {
-        comments: $comments,
-        contact: $contact,
-        files: $files,
-        name: $name
-      })
-    }
-    `,
-        variables: {
-          comments: 'These are comments',
-          contact: 'These are the contact details',
-          files: [upload, upload, upload, upload, upload, upload],
-          name: 'This is a name',
-        },
-      })
-      .then((res) => {
-        expect(res.data).to.be.null;
-        done();
-      })
-      .catch((err) => done(err));
-  });
-
-  it('works with the correct number of attachments', (done) => {
-    const file = Readable.from(Buffer.from('This is just a test.', 'utf-8'));
-    const upload = new Upload();
-    upload.promise = new Promise((resolve) => {
-      return resolve({
-        createReadStream: () => file,
-        filename: 'some_file.txt',
-        mimetype: 'plain/text',
-      });
-    });
-
-    server
-      .executeOperation({
-        query: `
-    mutation Contact(
-      $comments: String!,
-      $contact: String!,
-      $files: [Upload!]!,
-      $name: String!
-    ) {
-      contact(contactData: {
-        comments: $comments,
-        contact: $contact,
-        files: $files,
-        name: $name
-      })
-    }
-    `,
-        variables: {
-          comments: 'These are comments',
-          contact: 'These are the contact details',
-          files: [upload],
-          name: 'This is a name',
-        },
-      })
-      .then((res) => {
-        expect(res.data.contact).to.be.true;
-        done();
-      })
-      .catch((err) => done(err));
-  });
-
-  it('creates attachments dir when one does not exist', () => {
-    fs.rmdir(path.join(__dirname, '../src/graphql/mutations/attachments'), () => {});
-
-    const file = Readable.from(Buffer.from('This is just a test.', 'utf-8'));
-    const upload = new Upload();
-    upload.promise = new Promise((resolve) => {
-      return resolve({
-        createReadStream: () => file,
-        filename: 'some_file.txt',
-        mimetype: 'plain/text',
-      });
-    });
-
-    server
-      .executeOperation({
-        query: `
-    mutation Contact(
-      $comments: String!,
-      $contact: String!,
-      $files: [Upload!]!,
-      $name: String!
-    ) {
-      contact(contactData: {
-        comments: $comments,
-        contact: $contact,
-        files: $files,
-        name: $name
-      })
-    }
-    `,
-        variables: {
-          comments: 'These are comments',
-          contact: 'These are the contact details',
-          files: [upload],
-          name: 'This is a name',
-        },
-      })
-      .then((res) => {
-        expect(res.data.contact).to.be.true;
-        done();
-      })
-      .catch((err) => done(err));
-  });
-
-  it('returns boiler plate error', (done) => {
-    const errorResponse = handleErrors(new Error());
-    expect(errorResponse.code).to.have.string('INTERNAL_ERROR');
-    done();
   });
 });

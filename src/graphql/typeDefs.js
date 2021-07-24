@@ -39,9 +39,9 @@ const typeDefs = gql`
   input CREATE_NEW_PRODUCT_DATA {
     available: Boolean!
     description: String!
-    images: [String!]!
+    images: [String]
     name: String!
-    options: [String!]!
+    options: [String]
     price: Float!
     salePrice: Float
   }
@@ -50,9 +50,9 @@ const typeDefs = gql`
     available: Boolean!
     description: String!
     duration: Int!
-    images: [String!]!
+    images: [String]
     name: String!
-    options: [String!]!
+    options: [String]
     price: Float!
     salePrice: Float
   }
