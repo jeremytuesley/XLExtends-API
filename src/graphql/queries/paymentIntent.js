@@ -53,9 +53,8 @@ const paymentIntent = async (
   if (shipping) {
     total = parseInt(total) + SHIPPING_FLAT_FEE;
   }
-  const intent = await stripe.paymentIntents.create({ amount: total, currency: 'aud' });
 
-  console.log(total);
+  const intent = await stripe.paymentIntents.create({ amount: total, currency: 'aud' });
 
   return { clientSecret: intent.client_secret };
 };
