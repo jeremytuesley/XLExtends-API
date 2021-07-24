@@ -44,6 +44,8 @@ const contact = async (_, { contactData: { comments, contact, files, name } }) =
     ),
   );
 
+  // TODO: Check attachments.
+
   //   const message = {
   //     to: 'o.zahnitko@gmail.com',
   //     from: 'js.t3a2@gmail.com',
