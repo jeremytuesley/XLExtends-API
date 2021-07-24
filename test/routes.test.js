@@ -90,6 +90,36 @@ describe('XLExtends-API tests:', () => {
           },
         );
     });
+
+    it('Fail to login with bad credentials', (done) => {
+      request(app)
+        .post('/v1/graphql')
+        .send({
+          query: `
+          query Login($loginData: LOGIN_DATA) {
+            login(loginData: $loginData) {
+              authToken
+            }
+          }
+          `,
+          variables: { loginData: { email: 'user@email.com', password: 'wrong password' } },
+        })
+        .expect(200)
+        .end(
+          (
+            err,
+            {
+              body: {
+                errors: [{ code }],
+              },
+            },
+          ) => {
+            if (err) done(err);
+            expect(code).to.be.string('BAD_USER_INPUT');
+            done();
+          },
+        );
+    });
   });
 
   describe('Products', () => {
@@ -157,18 +187,62 @@ describe('XLExtends-API tests:', () => {
             },
           ) => {
             if (err) done(err);
-            expect(getProduct.name).to.have.string(firstProduct.name);
+            expect(getProduct.name).to.be.string(firstProduct.name);
             done();
           },
         );
     });
 
-    it('Create a new product', (done) => {
-      request(app)
-        .post('/v1/graphql')
-        .set('Authorization', `Bearer ${adminToken}`)
-        .send({
-          query: `
+    describe('Create product', () => {
+      it('Create a new product', (done) => {
+        request(app)
+          .post('/v1/graphql')
+          .set('Authorization', `Bearer ${adminToken}`)
+          .send({
+            query: `
+        mutation CreateNewProduct(
+          $createNewProductData: CREATE_NEW_PRODUCT_DATA
+        ) {
+          createNewProduct(createNewProductData: $createNewProductData) {
+            _id
+            name
+          }
+        }
+        `,
+            variables: {
+              createNewProductData: {
+                available: true,
+                description: 'New Product Description - 1',
+                name: 'Test Product - 1',
+                price: 1.99,
+              },
+            },
+          })
+          .expect(200)
+          .end(
+            (
+              err,
+              {
+                body: {
+                  data: { createNewProduct },
+                },
+              },
+            ) => {
+              if (err) done(err);
+
+              expect(createNewProduct).to.have.property('_id');
+              expect(createNewProduct).to.have.property('name');
+              expect(createNewProduct.name).to.be.string('Test Product - 1');
+              done();
+            },
+          );
+      });
+
+      it('No unauthorized product creation', (done) => {
+        request(app)
+          .post('/v1/graphql')
+          .send({
+            query: `
           mutation CreateNewProduct(
             $createNewProductData: CREATE_NEW_PRODUCT_DATA
           ) {
@@ -178,33 +252,31 @@ describe('XLExtends-API tests:', () => {
             }
           }
           `,
-          variables: {
-            createNewProductData: {
-              available: true,
-              description: 'New Product Description - 1',
-              name: 'Test Product - 1',
-              price: 1.99,
-            },
-          },
-        })
-        .expect(200)
-        .end(
-          (
-            err,
-            {
-              body: {
-                data: { createNewProduct },
+            variables: {
+              createNewProductData: {
+                available: true,
+                description: 'New Product Description - 1',
+                name: 'Test Product - 1',
+                price: 1.99,
               },
             },
-          ) => {
-            if (err) done(err);
-
-            expect(createNewProduct).to.have.property('_id');
-            expect(createNewProduct).to.have.property('name');
-            expect(createNewProduct.name).to.have.string('Test Product - 1');
-            done();
-          },
-        );
+          })
+          .expect(200)
+          .end(
+            (
+              err,
+              {
+                body: {
+                  errors: [{ code }],
+                },
+              },
+            ) => {
+              if (err) done(err);
+              expect(code).to.be.string('UNAUTHORIZED_ACTION');
+              done();
+            },
+          );
+      });
     });
 
     describe('Delete product', () => {

@@ -55,8 +55,6 @@ const paymentIntent = async (
   }
   const intent = await stripe.paymentIntents.create({ amount: total, currency: 'aud' });
 
-  console.log(total);
-
   return { clientSecret: intent.client_secret };
 };
 
