@@ -213,7 +213,8 @@ const typeDefs = gql`
   }
 
   type Query {
-    checkAvailability(checkAvailabilityData: CHECK_AVAILABILITY_DATA): [String]!
+    isAuth: Boolean!
+    login(loginData: LOGIN_DATA): AuthToken!
 
     getAllProducts: [Product!]!
     getAllServices: [Service!]!
@@ -221,8 +222,7 @@ const typeDefs = gql`
     getProduct(getProductData: GET_PRODUCT_DATA): Product!
     getService(getServiceData: GET_SERVICE_DATA): Service!
 
-    isAuth: Boolean!
-    login(loginData: LOGIN_DATA): AuthToken!
+    checkAvailability(checkAvailabilityData: CHECK_AVAILABILITY_DATA): [String]!
 
     signRequest: SignatureData!
 

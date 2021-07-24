@@ -9,7 +9,7 @@
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
     "test": "nyc --reporter=html mocha --exit",
-    "test-watch": "nodemon --exec \"nyc --reporter=html mocha --require mocha-suppress-logs --exit\""
+    "test-watch": "nodemon --exec \"nyc --reporter=html mocha --require mocha-suppress-logs -R spec --exit\""
   },
   "dependencies": {
     "@sendgrid/mail": "^7.4.5",
