@@ -537,5 +537,31 @@ describe('XLExtends-API tests:', () => {
     });
   });
 
+  describe('Contact', () => {
+    it('Sends email with valid input', (done) => {
+      request(app)
+        .post('/v1/graphql')
+        .send({
+          query: `
+          mutation Contact($contactData: CONTACT_DATA) {
+              contact(contactData: $contactData)
+          }
+          `,
+          variables: {
+            contactData: {
+              contact: 'user@email.com',
+              name: 'make it so',
+            },
+          },
+        })
+        .expect(200)
+        .end((err, { body: { data } }) => {
+          if (err) done(err);
+          expect(data).to.deep.equal({ contact: true });
+          done();
+        });
+    });
+  });
+
   describe('Payment intent', () => {});
 });
