@@ -19,8 +19,6 @@ const submitPurchase = async (
     },
   },
 ) => {
-  console.log(productId);
-
   const errors = [];
 
   if (!customer) errors.push({ message: 'Customer data is required.' });
@@ -49,7 +47,6 @@ const submitPurchase = async (
     customer,
     options,
     paymentId,
-    // ...(productId && [...productId.map((product) => ({ ...product, id: ObjectId(product.id) }))]),
     ...(productId && {
       productId: [...productId.map((product) => ({ ...product, id: ObjectId(product.id) }))],
     }),

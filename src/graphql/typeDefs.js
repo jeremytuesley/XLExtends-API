@@ -3,6 +3,44 @@ const { gql } = require('apollo-server-express');
 const typeDefs = gql`
   scalar Upload
 
+  type Mutation {
+    createNewAdmin(createNewAdminData: CREATE_NEW_ADMIN_DATA): AuthToken!
+    createNewBooking(createNewBookingData: CREATE_NEW_BOOKING_DATA): Booking!
+    createNewProduct(createNewProductData: CREATE_NEW_PRODUCT_DATA): Product!
+    createNewService(createNewServiceData: CREATE_NEW_SERVICE_DATA): Service!
+
+    deleteBooking(deleteBookingData: DELETE_BOOKING_DATA): Boolean!
+    deleteProduct(deleteProductData: DELETE_PRODUCT_DATA): Boolean!
+    deleteService(deleteServiceData: DELETE_SERVICE_DATA): Boolean!
+
+    editBooking(editBookingData: EDIT_BOOKING_DATA): Booking!
+    editProduct(editProductData: EDIT_PRODUCT_DATA): Product!
+    editService(editServiceData: EDIT_SERVICE_DATA): Service!
+
+    submitPurchase(submitPurchaseData: SUBMIT_PURCHASE_DATA): Purchase!
+
+    setAvailability(setAvailabilityData: SET_AVAILABILITY_DATA): String!
+
+    contact(contactData: CONTACT_DATA): Boolean!
+  }
+
+  type Query {
+    isAuth: Boolean!
+    login(loginData: LOGIN_DATA): AuthToken!
+
+    getAllProducts: [Product!]!
+    getAllServices: [Service!]!
+
+    getProduct(getProductData: GET_PRODUCT_DATA): Product!
+    getService(getServiceData: GET_SERVICE_DATA): Service!
+
+    signRequest: SignatureData!
+
+    checkAvailability(checkAvailabilityData: CHECK_AVAILABILITY_DATA): [String]
+
+    paymentIntent(paymentIntentData: PAYMENT_INTENT_DATA): ClientSecret!
+  }
+
   input CHECK_AVAILABILITY_DATA {
     quantity: Int!
     timeUnit: String!
@@ -11,20 +49,13 @@ const typeDefs = gql`
   input CONTACT_DATA {
     comments: String
     contact: String!
-    files: [Upload!]!
+    files: [Upload]
     name: String!
   }
 
   input CREATE_NEW_ADMIN_DATA {
     email: String!
     password: String!
-  }
-
-  input CUSTOMER_INPUT_DATA {
-    email: String!
-    firstName: String!
-    lastName: String!
-    phoneNumber: String!
   }
 
   input CREATE_NEW_BOOKING_DATA {
@@ -57,6 +88,13 @@ const typeDefs = gql`
     salePrice: Float
   }
 
+  input CUSTOMER_INPUT_DATA {
+    email: String!
+    firstName: String!
+    lastName: String!
+    phoneNumber: String!
+  }
+
   input DELETE_BOOKING_DATA {
     bookingId: ID!
   }
@@ -79,9 +117,9 @@ const typeDefs = gql`
   input EDIT_PRODUCT_DATA {
     available: Boolean!
     description: String!
-    images: [String!]!
+    images: [String]
     name: String!
-    options: [String!]!
+    options: [String]
     price: Float!
     productId: ID!
     salePrice: Float
@@ -91,9 +129,9 @@ const typeDefs = gql`
     available: Boolean!
     description: String!
     duration: Int!
-    images: [String!]!
+    images: [String]
     name: String!
-    options: [String!]!
+    options: [String]
     price: Float!
     salePrice: Float
     serviceId: ID!
@@ -112,6 +150,22 @@ const typeDefs = gql`
     password: String!
   }
 
+  input PAYMENT_INTENT_DATA {
+    productId: [PRODUCT_ORDER]
+    serviceId: [ID]
+    discount: String
+    shipping: Boolean!
+  }
+
+  input PRODUCT_ORDER {
+    id: ID!
+    quantity: Int!
+  }
+
+  input SET_AVAILABILITY_DATA {
+    date: String!
+  }
+
   input SHIPPING_ADDRESS_DATA {
     streetName: String!
     number: Int!
@@ -120,12 +174,14 @@ const typeDefs = gql`
     state: String!
   }
 
-  type ShippingAddress {
-    streetName: String!
-    number: Int!
-    suburb: String!
-    postcode: Int!
-    state: String!
+  input SUBMIT_PURCHASE_DATA {
+    comments: String
+    customer: CUSTOMER_INPUT_DATA!
+    options: String
+    paymentId: ID!
+    productId: [PRODUCT_ORDER]
+    serviceId: ID
+    shippingAddress: SHIPPING_ADDRESS_DATA
   }
 
   type Admin {
@@ -146,6 +202,10 @@ const typeDefs = gql`
     startTime: String!
   }
 
+  type ClientSecret {
+    clientSecret: String!
+  }
+
   type CustomerData {
     email: String!
     firstName: String!
@@ -153,90 +213,17 @@ const typeDefs = gql`
     phoneNumber: String!
   }
 
-  type File {
-    filename: String!
-    mimetype: String!
-    encoding: String!
-  }
-
   type Product {
     _id: ID!
     available: Boolean!
     creatorId: Admin!
     description: String!
-    images: [String!]!
+    images: [String]
     lastEditorId: Admin
     name: String!
-    options: [String!]!
+    options: [String]
     price: Float!
     salePrice: Float
-  }
-
-  type Service {
-    _id: ID!
-    available: Boolean!
-    creatorId: Admin!
-    description: String!
-    duration: Int!
-    images: [String!]!
-    lastEditorId: Admin
-    name: String!
-    options: [String!]!
-    price: Float!
-    salePrice: Float
-  }
-
-  type SignatureData {
-    signature: String!
-    timestamp: Int!
-  }
-
-  type Mutation {
-    contact(contactData: CONTACT_DATA): Boolean!
-
-    createNewAdmin(createNewAdminData: CREATE_NEW_ADMIN_DATA): AuthToken!
-    createNewBooking(createNewBookingData: CREATE_NEW_BOOKING_DATA): Booking!
-    createNewProduct(createNewProductData: CREATE_NEW_PRODUCT_DATA): Product!
-    createNewService(createNewServiceData: CREATE_NEW_SERVICE_DATA): Service!
-
-    deleteBooking(deleteBookingData: DELETE_BOOKING_DATA): Boolean!
-    deleteProduct(deleteProductData: DELETE_PRODUCT_DATA): Boolean!
-    deleteService(deleteServiceData: DELETE_SERVICE_DATA): Boolean!
-
-    editBooking(editBookingData: EDIT_BOOKING_DATA): Booking!
-    editProduct(editProductData: EDIT_PRODUCT_DATA): Product!
-    editService(editServiceData: EDIT_SERVICE_DATA): Service!
-
-    submitPurchase(submitPurchaseData: SUBMIT_PURCHASE_DATA): Purchase!
-
-    setAvailability(setAvailabilityData: SET_AVAILABILITY_DATA): String!
-  }
-
-  type Query {
-    isAuth: Boolean!
-    login(loginData: LOGIN_DATA): AuthToken!
-
-    getAllProducts: [Product!]!
-    getAllServices: [Service!]!
-
-    getProduct(getProductData: GET_PRODUCT_DATA): Product!
-    getService(getServiceData: GET_SERVICE_DATA): Service!
-
-    checkAvailability(checkAvailabilityData: CHECK_AVAILABILITY_DATA): [String]!
-
-    signRequest: SignatureData!
-
-    paymentIntent(paymentIntentData: PAYMENT_INTENT_DATA): ClientSecret!
-  }
-
-  input SUBMIT_PURCHASE_DATA {
-    comments: String
-    customer: CUSTOMER_INPUT_DATA!
-    options: String
-    paymentId: ID!
-    productId: [PRODUCT_ORDER]
-    serviceId: ID
-    shippingAddress: SHIPPING_ADDRESS_DATA
   }
 
   type Purchase {
@@ -250,24 +237,31 @@ const typeDefs = gql`
     shippingAddress: ShippingAddress
   }
 
-  input SET_AVAILABILITY_DATA {
-    date: String!
+  type Service {
+    _id: ID!
+    available: Boolean!
+    creatorId: Admin!
+    description: String!
+    duration: Int!
+    images: [String]
+    lastEditorId: Admin
+    name: String!
+    options: [String]
+    price: Float!
+    salePrice: Float
   }
 
-  input PAYMENT_INTENT_DATA {
-    productId: [PRODUCT_ORDER]
-    serviceId: [ID]
-    discount: String
-    shipping: Boolean!
+  type ShippingAddress {
+    streetName: String!
+    number: Int!
+    suburb: String!
+    postcode: Int!
+    state: String!
   }
 
-  input PRODUCT_ORDER {
-    id: ID!
-    quantity: Int!
-  }
-
-  type ClientSecret {
-    clientSecret: String!
+  type SignatureData {
+    signature: String!
+    timestamp: Int!
   }
 `;
 
