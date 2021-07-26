@@ -159,6 +159,7 @@ const typeDefs = gql`
 
   input PRODUCT_ORDER {
     id: ID!
+    options: String
     quantity: Int!
   }
 
@@ -167,8 +168,9 @@ const typeDefs = gql`
   }
 
   input SHIPPING_ADDRESS_DATA {
+    comments: String
     streetName: String!
-    number: Int!
+    number: String!
     suburb: String!
     postcode: Int!
     state: String!
@@ -252,8 +254,9 @@ const typeDefs = gql`
   }
 
   type ShippingAddress {
+    comments: String
     streetName: String!
-    number: Int!
+    number: String!
     suburb: String!
     postcode: Int!
     state: String!
