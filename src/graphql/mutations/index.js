@@ -14,7 +14,6 @@ const { editProduct } = require('./editProduct');
 const { editService } = require('./editService');
 
 const { submitPurchase } = require('./submitPurchase');
-
 const { setAvailability } = require('./setAvailability');
 
 module.exports = {
