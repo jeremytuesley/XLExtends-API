@@ -4,6 +4,8 @@ const { BadUserInputError } = require('../../errors/CustomErrors');
 const Booking = require('../../models/booking');
 const Service = require('../../models/service');
 
+const { sendEmail } = require('../../utils/email');
+
 const createNewBooking = async (
   _,
   {
@@ -46,6 +48,8 @@ const createNewBooking = async (
   });
 
   const newBookingSaveResponse = await newBooking.save();
+
+  sendEmail(newBookingSaveResponse.customer.email, 'Thank you for making the booking.', 'THANKS');
 
   return {
     ...newBookingSaveResponse._doc,

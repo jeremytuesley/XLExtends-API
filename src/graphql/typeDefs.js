@@ -39,6 +39,8 @@ const typeDefs = gql`
     checkAvailability(checkAvailabilityData: CHECK_AVAILABILITY_DATA): [String]
 
     paymentIntent(paymentIntentData: PAYMENT_INTENT_DATA): ClientSecret!
+
+    validateDiscountCode(discountCode: String!): DiscountCodeData!
   }
 
   input CHECK_AVAILABILITY_DATA {
@@ -159,6 +161,7 @@ const typeDefs = gql`
 
   input PRODUCT_ORDER {
     id: ID!
+    options: String
     quantity: Int!
   }
 
@@ -167,8 +170,9 @@ const typeDefs = gql`
   }
 
   input SHIPPING_ADDRESS_DATA {
+    comments: String
     streetName: String!
-    number: Int!
+    number: String!
     suburb: String!
     postcode: Int!
     state: String!
@@ -213,6 +217,11 @@ const typeDefs = gql`
     phoneNumber: String!
   }
 
+  type DiscountCodeData {
+    isValid: Boolean!
+    discountPercentage: Int!
+  }
+
   type Product {
     _id: ID!
     available: Boolean!
@@ -252,8 +261,9 @@ const typeDefs = gql`
   }
 
   type ShippingAddress {
+    comments: String
     streetName: String!
-    number: Int!
+    number: String!
     suburb: String!
     postcode: Int!
     state: String!

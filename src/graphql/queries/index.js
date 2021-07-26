@@ -13,6 +13,8 @@ const { signRequest } = require('./signRequest');
 
 const { paymentIntent } = require('./paymentIntent');
 
+const { validateDiscountCode } = require('./validateDiscountCode');
+
 module.exports = {
   checkAvailability,
 
@@ -28,4 +30,6 @@ module.exports = {
   signRequest,
 
   paymentIntent,
+
+  validateDiscountCode,
 };

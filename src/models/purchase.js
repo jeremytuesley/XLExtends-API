@@ -15,14 +15,15 @@ module.exports = model(
       paymentId: { required: true, type: String },
       productId: [
         {
-          product: { required: false, ref: 'Product', type: Schema.Types.ObjectId },
+          product: { required: true, ref: 'Product', type: Schema.Types.ObjectId },
           quantity: { default: 1, required: true, type: Number },
+          options: { required: false, type: String },
         },
       ],
       serviceId: { required: false, ref: 'Service', type: Schema.Types.ObjectId },
       shippingAddress: {
         streetName: { required: this.productId, type: String },
-        number: { required: this.productId, type: Number },
+        number: { required: this.productId, type: String },
         suburb: { required: this.productId, type: String },
         postcode: { required: this.productId, type: Number },
         state: { required: this.productId, type: String },
