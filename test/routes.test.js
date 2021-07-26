@@ -119,6 +119,34 @@ describe('XLExtends-API tests:', () => {
           },
         );
     });
+
+    it('Check if request is authorized', (done) => {
+      request(app)
+        .post('/v1/graphql')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({
+          query: `
+        query IsAuth {
+          isAuth
+        }
+        `,
+        })
+        .expect(200)
+        .end(
+          (
+            err,
+            {
+              body: {
+                data: { isAuth },
+              },
+            },
+          ) => {
+            if (err) done(err);
+            expect(isAuth).to.be.true;
+            done();
+          },
+        );
+    });
   });
 
   describe('Products', () => {
@@ -563,5 +591,69 @@ describe('XLExtends-API tests:', () => {
     });
   });
 
-  describe('Payment intent', () => {});
+  describe('Validate discount code', () => {
+    it('Perform validation on discount a discount code', (done) => {
+      request(app)
+        .post('/v1/graphql')
+        .send({
+          query: `
+        query ValidateDiscountCode($discountCode: String!) {
+          validateDiscountCode(discountCode: $discountCode) {
+            isValid
+            discountPercentage
+          }
+        }
+        `,
+          variables: { discountCode: 'DISCOUNT_5' },
+        })
+        .expect(200)
+        .end(
+          (
+            err,
+            {
+              body: {
+                data: { validateDiscountCode },
+              },
+            },
+          ) => {
+            if (err) done(err);
+            expect(validateDiscountCode).to.deep.equal({ isValid: true, discountPercentage: 5 });
+            done();
+          },
+        );
+    });
+  });
+
+  describe('Sign request', () => {
+    it('Sign upload request for Cloudinary', (done) => {
+      request(app)
+        .post('/v1/graphql')
+        .send({
+          query: `
+        query SignRequest {
+          signRequest {
+            signature
+            timestamp
+          }
+        }
+        `,
+        })
+        .expect(200)
+        .end(
+          (
+            err,
+            {
+              body: {
+                data: { signRequest },
+              },
+            },
+          ) => {
+            if (err) done(err);
+            expect(signRequest).to.have.property('signature');
+            expect(signRequest).to.have.property('timestamp');
+            done();
+          },
+        );
+    });
+  });
 });
