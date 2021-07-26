@@ -120,6 +120,7 @@ const contact = async (_, { contactData: { comments, contact, files = [], name }
       fs.rmdir(path.join(__dirname, 'attachments'), () => {});
       return true;
     } catch (error) {
+      console.log(error);
       return false;
     }
   }
