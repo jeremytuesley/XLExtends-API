@@ -39,6 +39,8 @@ const typeDefs = gql`
     checkAvailability(checkAvailabilityData: CHECK_AVAILABILITY_DATA): [String]
 
     paymentIntent(paymentIntentData: PAYMENT_INTENT_DATA): ClientSecret!
+
+    validateDiscountCode(discountCode: String!): DiscountCodeData!
   }
 
   input CHECK_AVAILABILITY_DATA {
@@ -213,6 +215,11 @@ const typeDefs = gql`
     firstName: String!
     lastName: String!
     phoneNumber: String!
+  }
+
+  type DiscountCodeData {
+    isValid: Boolean!
+    discountPercentage: Int!
   }
 
   type Product {
