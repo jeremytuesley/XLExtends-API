@@ -5,6 +5,8 @@ const Product = require('../../models/product');
 const Purchase = require('../../models/purchase');
 const Service = require('../../models/service');
 
+const { sendEmail } = require('../../utils/email');
+
 const submitPurchase = async (
   _,
   {
@@ -48,13 +50,15 @@ const submitPurchase = async (
     options,
     paymentId,
     ...(productId && {
-      productId: [...productId.map((product) => ({ ...product, id: ObjectId(product.id) }))],
+      productId: [...productId.map((product) => ({ ...product, product: ObjectId(product.id) }))],
     }),
     ...(serviceId && { serviceId }),
     shippingAddress,
   });
 
   const newPurchaseSaveResponse = await newPurchase.save();
+
+  sendEmail(newPurchaseSaveResponse.customer.email, 'Thank you for the purchase.', 'THANKS');
 
   if (productId) {
     return { ...newPurchaseSaveResponse._doc, productId: targetProducts };

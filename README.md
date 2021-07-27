@@ -2,5 +2,30 @@
 
 API repository of XLExtends - online sales and booking platform for a small business
 
-TODO: Discount codes.
-TODO: Validate customer details for new booking.
+## Testing
+
+```
+ADMIN_RECIPIENT_EMAIL_ADDRESS=**REQUIRED**
+ADMIN_SENDER_EMAIL_ADDRESS=**REQUIRED**
+
+CLIENT_URL=* (all cors origin for local development)
+CLOUDINARY_SECRET=**REQUIRED**
+
+DB_ATLAS_PASSWORD=**REQUIRED**
+DB_ATLAS_USERNAME=**REQUIRED**
+
+JWT_EXPIRY=**REQUIRED**
+JWT_SECRET=**REQUIRED**
+
+MONGO_DB=local
+
+NODE_ENV=dev
+NODEMAILER_USERNAME=**REQUIRED**
+NODEMAILER_PASSWORD=**REQUIRED**
+
+PORT=5000
+
+SENDGRID_API_KEY=**NOTE_REQUIRED**
+STRIPE_API_KEY=**REQUIRED**
+
+```
