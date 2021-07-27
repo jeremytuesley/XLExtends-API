@@ -18,6 +18,11 @@ const createNewProduct = async (
 
   if (errors.length) throw new BadUserInputError(errors);
 
+  const existingProduct = await Product.findOne({ name });
+
+  if (existingProduct)
+    throw new BadUserInputError({ message: `Product with name - ${name} - already exists.` });
+
   const newProduct = new Product({
     available,
     creatorId: user._id,
@@ -29,16 +34,9 @@ const createNewProduct = async (
     salePrice,
   });
 
-  const existingProduct = await Product.findOne({ name });
-
-  if (existingProduct)
-    throw new BadUserInputError({ message: `Product with name - ${name} - already exists.` });
-
   const newProductSaveResult = await newProduct.save();
 
-  const { createdAt, updatedAt, ...restNewProduct } = newProductSaveResult._doc;
-
-  return { ...restNewProduct, creatorId: { email: user.email } };
+  return { ...newProductSaveResult._doc, creatorId: { email: user.email } };
 };
 
 module.exports = { createNewProduct };

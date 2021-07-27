@@ -20,23 +20,13 @@ const editProduct = async (
 
   if (errors.length) throw new BadUserInputError(errors);
 
-  const targetProduct = await Product.findOne({ _id: productId }).populate('creatorId', 'email');
-
-  targetProduct.available = available;
-  targetProduct.description = description;
-  targetProduct.images = images;
-  targetProduct.lastEditorId = user._id;
-  targetProduct.name = name;
-  targetProduct.options = options;
-  targetProduct.price = price;
-  targetProduct.salePrice = salePrice;
-
-  const targetProductSaveResult = await targetProduct.save();
-
-  return {
-    ...targetProductSaveResult._doc,
-    lastEditorId: { email: user.email },
-  };
+  return await Product.findOneAndUpdate(
+    { _id: productId },
+    { available, description, images, lastEditorId: user._id, name, options, price, salePrice },
+    { new: true },
+  )
+    .populate('creatorId', 'email')
+    .populate('lastEditorId', 'email');
 };
 
 module.exports = { editProduct };
