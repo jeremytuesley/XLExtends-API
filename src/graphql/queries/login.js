@@ -10,7 +10,8 @@ const login = async (_, { loginData: { email, password } }) => {
 
   if (validator.isEmpty(email)) errors.push({ message: 'Email is required.' });
 
-  if (validator.isEmpty(password)) errors.push({ message: 'Password is required.' });
+  if (validator.isEmpty(password))
+    errors.push({ message: 'Password is required.' });
 
   if (errors.length) throw new BadUserInputError(errors);
 
@@ -22,7 +23,9 @@ const login = async (_, { loginData: { email, password } }) => {
 
   if (!doPasswordsMatch) throw new BadUserInputError();
 
-  return { authToken: signToken({ email: targetAdmin.email, _id: targetAdmin._id }) };
+  return {
+    authToken: signToken({ email: targetAdmin.email, _id: targetAdmin._id }),
+  };
 };
 
 module.exports = { login };
