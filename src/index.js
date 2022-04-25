@@ -4,7 +4,7 @@ const {
 } = require('./database/createDatabaseConnection');
 const { initializeServer } = require('./server');
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 
 const initializeExpress = async () => {
   const { app, server } = await initializeServer();
