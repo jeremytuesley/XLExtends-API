@@ -1,4 +1,7 @@
-const { createDatabaseConnection } = require('./database/createDatabaseConnection');
+require('dotenv').config();
+const {
+  createDatabaseConnection,
+} = require('./database/createDatabaseConnection');
 const { initializeServer } = require('./server');
 
 const PORT = process.env.PORT || 5000;
@@ -12,7 +15,8 @@ const initializeExpress = async () => {
   console.log(`Graphql listening on port ${PORT}${server.graphqlPath}...`);
 };
 
-const establishDatabaseConnection = async () => await createDatabaseConnection();
+const establishDatabaseConnection = async () =>
+  await createDatabaseConnection();
 
 const initializeApp = async () => {
   await establishDatabaseConnection();

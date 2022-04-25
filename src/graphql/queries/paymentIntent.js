@@ -10,7 +10,7 @@ const SHIPPING_FLAT_FEE = 1500;
 
 const paymentIntent = async (
   _,
-  { paymentIntentData: { productId, serviceId, discount, shipping } },
+  { paymentIntentData: { productId, serviceId, discount, shipping } }
 ) => {
   let productsTotal;
   let servicesTotal;
@@ -26,7 +26,7 @@ const paymentIntent = async (
         total +
         (product.salePrice || product.price) *
           productId.find((p) => p.id === product._id.toString()).quantity,
-      0,
+      0
     );
   }
 
@@ -37,7 +37,7 @@ const paymentIntent = async (
 
     servicesTotal = requestedServices.reduce(
       (total, service) => total + (service.salePrice || service.price),
-      0,
+      0
     );
   }
 
@@ -46,15 +46,21 @@ const paymentIntent = async (
   if (discount) {
     targetDiscountCode = await DiscountCode.findOne({ name: discount });
     if (targetDiscountCode)
-      total = (total * parseFloat((100 - targetDiscountCode.amount) / 100).toFixed(2)).toFixed(0);
+      total = (
+        total * parseFloat((100 - targetDiscountCode.amount) / 100).toFixed(2)
+      ).toFixed(0);
     else throw new BadUserInputError({ message: 'Invalid discount code.' });
   }
-
+  console.log(total, 'total');
   if (shipping) {
+    console.log(parseInt(total), SHIPPING_FLAT_FEE);
     total = parseInt(total) + SHIPPING_FLAT_FEE;
   }
 
-  const intent = await stripe.paymentIntents.create({ amount: total, currency: 'aud' });
+  const intent = await stripe.paymentIntents.create({
+    amount: parseInt(total),
+    currency: 'aud',
+  });
 
   return { clientSecret: intent.client_secret };
 };

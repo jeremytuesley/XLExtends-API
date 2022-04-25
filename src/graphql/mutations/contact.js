@@ -6,7 +6,10 @@ const validator = require('validator');
 
 const { v4: uuidv4 } = require('uuid');
 
-const { TooManyAttachments, BadUserInputError } = require('../../errors/CustomErrors');
+const {
+  TooManyAttachments,
+  BadUserInputError,
+} = require('../../errors/CustomErrors');
 const {
   fsAccessPromise,
   fsMakeDirPromise,
@@ -15,10 +18,15 @@ const {
   writeStreamToFile,
 } = require('../../utils/fsPromises');
 
-const contact = async (_, { contactData: { comments, contact, files = [], name } }) => {
+const contact = async (
+  _,
+  { contactData: { comments, contact, files = [], name } }
+) => {
   const errors = [];
+  console.log(contactData, comments, contact, name);
 
-  if (validator.isEmpty(contact)) errors.push({ message: 'Contact details are required.' });
+  if (validator.isEmpty(contact))
+    errors.push({ message: 'Contact details are required.' });
 
   if (validator.isEmpty(name)) errors.push({ message: 'Name is required.' });
 
@@ -38,12 +46,17 @@ const contact = async (_, { contactData: { comments, contact, files = [], name }
 
   await Promise.all(
     resolvedFiles.map(({ createReadStream }) =>
-      writeStreamToFile(createReadStream, path.join(__dirname, 'attachments', uniqueFilename)),
-    ),
+      writeStreamToFile(
+        createReadStream,
+        path.join(__dirname, 'attachments', uniqueFilename)
+      )
+    )
   );
 
   const readFiles = await Promise.all(
-    resolvedFiles.map(() => fsReadPromise(path.join(__dirname, 'attachments', uniqueFilename))),
+    resolvedFiles.map(() =>
+      fsReadPromise(path.join(__dirname, 'attachments', uniqueFilename))
+    )
   );
 
   if (process.env.NODE_ENV === 'test') {
@@ -58,8 +71,8 @@ const contact = async (_, { contactData: { comments, contact, files = [], name }
 
     try {
       await transporter.sendMail({
-        from: 'js.t3a2@gmail.com',
-        to: 'o.zahnitko@gmail.com',
+        from: 'xlextendsmanage@gmail.com',
+        to: 'tuesleyjeremy@gmail.com',
         subject: `Hello from ${name}`,
         attachments: readFiles.map(({ filename }, index) => ({
           content: readFiles[index],
@@ -74,8 +87,8 @@ const contact = async (_, { contactData: { comments, contact, files = [], name }
       });
       await Promise.all(
         resolvedFiles.map(({ filename }) =>
-          fsUnlinkPromise(path.join(__dirname, 'attachments', filename)),
-        ),
+          fsUnlinkPromise(path.join(__dirname, 'attachments', filename))
+        )
       );
       fs.rmdir(path.join(__dirname, 'attachments'), () => {});
       return true;
@@ -113,8 +126,8 @@ const contact = async (_, { contactData: { comments, contact, files = [], name }
         await sgMail.send(message),
         await Promise.all(
           resolvedFiles.map(() =>
-            fsUnlinkPromise(path.join(__dirname, 'attachments', uniqueFilename)),
-          ),
+            fsUnlinkPromise(path.join(__dirname, 'attachments', uniqueFilename))
+          )
         ),
       ]);
       fs.rmdir(path.join(__dirname, 'attachments'), () => {});
